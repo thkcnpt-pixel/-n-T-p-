@@ -1,15 +1,12 @@
 /* ==========================================================================
    js/services/data.service.js — Tải & chuẩn hóa dữ liệu câu hỏi (JSON tĩnh)
-   File: data/subjects.json, data/{subjectId}-truong.json, data/{subjectId}-ngoai.json
-   (Đã loại bỏ hoàn toàn logic gộp đề "all" theo thiết kế mới).
-
-   SCHEMA CÂU HỎI (trong file JSON):
-   - Phần 1 - Trắc nghiệm nhiều lựa chọn (`part: 1`, `type: "mcq"`):
-     { "id", "part": 1, "type": "mcq", "question", "options": [...], "answer": 0..3, "explanation", "image"?, "shuffle"? }
-   - Phần 2 - Trắc nghiệm Đúng/Sai (`part: 2`, `type: "truefalse"`):
-     { "id", "part": 2, "type": "truefalse", "question", "answer": true | false, "explanation" }
-   - Phần 3 - Trắc nghiệm Trả lời ngắn (`part: 3`, `type: "short"`):
-     { "id", "part": 3, "type": "short", "question", "answer": "đáp án" | ["đáp án 1", "đáp án 2"], "explanation" }
+   - Hỗ trợ cả 2 cấu trúc dữ liệu:
+     1) Cấu trúc phẳng (Mảng câu hỏi): dùng cho `*-truong.json`, `vatly-ngoai.json`, `tinhoc-ngoai.json`...
+     2) Cấu trúc phân nhánh sâu (Chuyên đề `categories` -> Bài nhỏ `lessons` -> `questions`):
+        dùng cho `toan-ngoai.json` (Tổng hợp / Xác suất -> Bài 1, Bài 2...).
+   - Có sẵn bộ khung Chuyên đề mặc định (Fallback Skeleton: "Tổng hợp" & "Xác suất")
+     cho Toán > Đề ngoài để giao diện chọn danh mục LUÔN hiển thị kể cả khi
+     file chưa tải xong hoặc đang rỗng.
    Dev by Thkc
    ========================================================================== */
 
@@ -29,7 +26,39 @@ const TYPE_TO_PART = {
   short: 3,
 };
 
-/** Cache theo file: "toan-truong" -> Question[] đã chuẩn hóa */
+/**
+ * Cấu trúc danh mục mặc định bắt buộc cho Toán > Đề ngoài.
+ * Đảm bảo UI luôn hiển thị 2 danh mục "Tổng hợp" và "Xác suất" kèm các bài nhỏ
+ * ngay cả khi mạng lỗi hoặc file JSON rỗng.
+ */
+export const DEFAULT_TOAN_NGOAI_CATEGORIES = Object.freeze([
+  {
+    id: 'tonghop',
+    name: 'Tổng hợp',
+    icon: '📚',
+    description: 'Các đề ôn tập tổng hợp kiến thức Giải tích & Hình học',
+    lessons: [
+      { id: 'bai-1', name: 'Bài 1: Đề tổng hợp số 1', questions: [] },
+      { id: 'bai-2', name: 'Bài 2: Đề tổng hợp số 2', questions: [] },
+    ],
+  },
+  {
+    id: 'xacsuat',
+    name: 'Xác suất',
+    icon: '🎲',
+    description: 'Tổ hợp, Xác suất cổ điển và Xác suất có điều kiện',
+    lessons: [
+      { id: 'bai-1', name: 'Bài 1: Quy tắc đếm & Xác suất cổ điển', questions: [] },
+      { id: 'bai-2', name: 'Bài 2: Xác suất có điều kiện & Công thức Bayes', questions: [] },
+    ],
+  },
+]);
+
+/**
+ * Cache theo file:
+ * "toan-truong" -> { kind: 'flat', questions: Question[], categories: [] }
+ * "toan-ngoai"  -> { kind: 'nested', questions: Question[], categories: CategoryNode[] }
+ */
 const fileCache = new Map();
 
 /**
@@ -41,18 +70,36 @@ const fileCache = new Map();
 
 /**
  * @typedef {Object} Question
- * @property {string} key          Định danh duy nhất toàn app: "{subject}:{source}:{id}"
+ * @property {string} key          Định danh duy nhất toàn app
  * @property {string} id
  * @property {1|2|3}  part         Phần ôn: 1 (MCQ), 2 (Đúng/Sai), 3 (Trả lời ngắn)
  * @property {'mcq'|'truefalse'|'short'} type
  * @property {string} subjectId
  * @property {'truong'|'ngoai'} source
+ * @property {string|null} [categoryId]
+ * @property {string|null} [lessonId]
  * @property {string} question
  * @property {string|null} image
- * @property {QuestionOption[]} options   Rỗng với câu 'short'
- * @property {number|string[]} answer     Index gốc (mcq/truefalse) hoặc danh sách đáp án (short)
+ * @property {QuestionOption[]} options
+ * @property {number|string[]} answer
  * @property {string} explanation
- * @property {boolean} shuffle            false = khóa vị trí câu khi xáo câu hỏi
+ * @property {boolean} shuffle
+ */
+
+/**
+ * @typedef {Object} LessonNode
+ * @property {string} id
+ * @property {string} name
+ * @property {Question[]} questions
+ */
+
+/**
+ * @typedef {Object} CategoryNode
+ * @property {string} id
+ * @property {string} name
+ * @property {string} icon
+ * @property {string} description
+ * @property {LessonNode[]} lessons
  */
 
 /* --------------------------------------------------------------------------
@@ -75,7 +122,7 @@ async function fetchJson(url) {
    -------------------------------------------------------------------------- */
 
 /**
- * Tải danh sách môn vào state.subjects (bao gồm mảng `sources` hợp lệ của từng môn).
+ * Tải danh sách 6 môn vào state.subjects.
  * @returns {Promise<Array<{id: string, name: string, icon: string, sources: string[]}>>}
  */
 export async function loadSubjects() {
@@ -105,29 +152,107 @@ export function getSubjectById(id) {
   return getState('subjects').find((s) => s.id === id) || null;
 }
 
+/**
+ * Kiểm tra tổ hợp Môn + Nguồn đề có sử dụng màn hình phân nhánh Chuyên đề -> Bài nhỏ hay không.
+ * Theo đặc tả: **Toán > Đề ngoài** bắt buộc chuyển qua màn chọn "Tổng hợp" / "Xác suất" -> Bài nhỏ.
+ * @param {string} subjectId
+ * @param {string} source
+ * @returns {boolean}
+ */
+export function requiresCategoryStep(subjectId, source) {
+  return subjectId === 'toan' && source === SOURCES.NGOAI;
+}
+
 /* --------------------------------------------------------------------------
-   Câu hỏi & Lọc theo Phần ôn (Part 1, 2, 3)
+   Truy xuất Danh mục Chuyên đề & Bài nhỏ (dành cho Toán > Đề ngoài)
    -------------------------------------------------------------------------- */
 
 /**
- * Tải câu hỏi theo môn + nguồn đơn lẻ ('truong' hoặc 'ngoai'),
- * sau đó lọc theo danh sách `parts` (nếu có truyền).
+ * Lấy danh sách Chuyên đề (Tổng hợp, Xác suất) và các Bài nhỏ bên trong.
+ * LUÔN trả về ít nhất 2 danh mục "Tổng hợp" và "Xác suất" (không bao giờ trả mảng rỗng)
+ * để tránh lỗi ẩn mất giao diện khi chưa tải được câu hỏi.
+ * @param {string} subjectId
+ * @param {'truong'|'ngoai'} source
+ * @returns {Promise<CategoryNode[]>}
+ */
+export async function loadNestedCategories(subjectId, source) {
+  try {
+    const cleanSource = source === SOURCES.NGOAI ? SOURCES.NGOAI : SOURCES.TRUONG;
+    const parsed = await loadFile(subjectId, cleanSource);
+    if (parsed.categories && parsed.categories.length > 0) {
+      return structuredClone(parsed.categories);
+    }
+  } catch (err) {
+    console.warn('[data] Không tải được danh mục từ JSON, dùng danh mục mặc định:', err);
+  }
+
+  if (subjectId === 'toan' && source === SOURCES.NGOAI) {
+    return structuredClone(DEFAULT_TOAN_NGOAI_CATEGORIES);
+  }
+  return [];
+}
+
+/* --------------------------------------------------------------------------
+   Câu hỏi & Lọc theo Bài nhỏ / Phần ôn (Part 1, 2, 3)
+   -------------------------------------------------------------------------- */
+
+/**
+ * @typedef {Object} QuestionFilterOptions
+ * @property {number[]} [parts]       Các phần ôn cần lọc: [1, 2, 3]
+ * @property {string|null} [categoryId] Mã chuyên đề (VD: 'tonghop' | 'xacsuat')
+ * @property {string|null} [lessonId]   Mã bài nhỏ (VD: 'bai-1' | 'bai-2')
+ */
+
+/**
+ * Tải câu hỏi theo môn + nguồn ('truong' hoặc 'ngoai'),
+ * lọc theo Bài nhỏ (nếu là cấu trúc phân nhánh sâu như Toán > Đề ngoài)
+ * và lọc theo Phần ôn (`parts`: 1, 2, 3).
  * Trả về BẢN SAO để việc xáo trộn không làm hỏng cache.
  * @param {string} subjectId
  * @param {'truong'|'ngoai'} source
- * @param {number[]} [parts]  Mảng các phần cần lọc (VD: [1, 2, 3]). Nếu không truyền -> lấy hết.
+ * @param {number[]|QuestionFilterOptions} [filterOrParts]
  * @returns {Promise<Question[]>}
  */
-export async function loadQuestions(subjectId, source, parts) {
+export async function loadQuestions(subjectId, source, filterOrParts) {
   const cleanSource = source === SOURCES.NGOAI ? SOURCES.NGOAI : SOURCES.TRUONG;
-  const allQuestions = await loadFile(subjectId, cleanSource);
-  const filtered = filterQuestionsByParts(allQuestions, parts);
+  const parsed = await loadFile(subjectId, cleanSource);
+
+  const opts = Array.isArray(filterOrParts)
+    ? { parts: filterOrParts }
+    : (filterOrParts || {});
+
+  const baseQuestions = selectQuestionsFromParsed(parsed, opts.categoryId, opts.lessonId);
+  const filtered = filterQuestionsByParts(baseQuestions, opts.parts);
   return structuredClone(filtered);
 }
 
 /**
+ * Trích xuất danh sách câu hỏi từ dữ liệu đã parse (hỗ trợ lọc theo categoryId & lessonId).
+ * @param {{kind: string, questions: Question[], categories: CategoryNode[]}} parsed
+ * @param {string|null} [categoryId]
+ * @param {string|null} [lessonId]
+ * @returns {Question[]}
+ */
+function selectQuestionsFromParsed(parsed, categoryId, lessonId) {
+  if (!parsed) return [];
+
+  if (parsed.kind === 'nested' && Array.isArray(parsed.categories)) {
+    if (categoryId) {
+      const cat = parsed.categories.find((c) => c.id === categoryId);
+      if (!cat) return [];
+      if (lessonId) {
+        const les = cat.lessons.find((l) => l.id === lessonId);
+        return les ? les.questions : [];
+      }
+      return cat.lessons.flatMap((l) => l.questions);
+    }
+  }
+
+  return parsed.questions || [];
+}
+
+/**
  * Lọc danh sách câu hỏi theo các phần ôn (1: MCQ, 2: Đúng/Sai, 3: Trả lời ngắn).
- * Hỗ trợ đối chiếu cả trường `q.part` lẫn `q.type`.
  * @param {Question[]} questions
  * @param {number[]} [parts]
  * @returns {Question[]}
@@ -146,16 +271,18 @@ export function filterQuestionsByParts(questions, parts) {
 }
 
 /**
- * Thống kê số lượng câu hỏi theo từng phần (Phần 1, 2, 3) cho 1 môn + nguồn đề.
+ * Thống kê số lượng câu hỏi theo từng phần (Phần 1, 2, 3) cho 1 môn + nguồn đề (+ bài nhỏ nếu có).
  * Không throw — trả về null nếu file lỗi.
  * @param {string} subjectId
  * @param {'truong'|'ngoai'} source
+ * @param {{categoryId?: string|null, lessonId?: string|null}} [scope]
  * @returns {Promise<{total: number, byPart: {1: number, 2: number, 3: number}}|null>}
  */
-export async function getQuestionBreakdown(subjectId, source) {
+export async function getQuestionBreakdown(subjectId, source, scope = {}) {
   try {
     const cleanSource = source === SOURCES.NGOAI ? SOURCES.NGOAI : SOURCES.TRUONG;
-    const list = await loadFile(subjectId, cleanSource);
+    const parsed = await loadFile(subjectId, cleanSource);
+    const list = selectQuestionsFromParsed(parsed, scope.categoryId, scope.lessonId);
     const byPart = { 1: 0, 2: 0, 3: 0 };
     list.forEach((q) => {
       const p = Number(q.part) || TYPE_TO_PART[q.type] || 1;
@@ -169,35 +296,130 @@ export async function getQuestionBreakdown(subjectId, source) {
 }
 
 /**
- * Đếm số câu theo môn + nguồn + các phần đã chọn. Không throw.
+ * Đếm tổng số câu theo môn + nguồn (+ phạm vi chuyên đề/bài nhỏ/phần ôn). Không throw.
  * @param {string} subjectId
  * @param {'truong'|'ngoai'} source
- * @param {number[]} [parts]
+ * @param {number[]|QuestionFilterOptions} [filterOrParts]
  * @returns {Promise<number|null>}
  */
-export async function countQuestions(subjectId, source, parts) {
+export async function countQuestions(subjectId, source, filterOrParts) {
   try {
-    return (await loadQuestions(subjectId, source, parts)).length;
+    return (await loadQuestions(subjectId, source, filterOrParts)).length;
   } catch (err) {
     console.warn('[data] Đếm câu hỏi lỗi:', err);
     return null;
   }
 }
 
+/* --------------------------------------------------------------------------
+   Tải & Chuẩn hóa File JSON (Hỗ trợ cả Phẳng lẫn Lồng nhau)
+   -------------------------------------------------------------------------- */
+
 /**
- * Tải + chuẩn hóa 1 file JSON (có cache).
  * @param {string} subjectId
  * @param {'truong'|'ngoai'} source
- * @returns {Promise<Question[]>}
+ * @returns {Promise<{kind: 'flat'|'nested', questions: Question[], categories: CategoryNode[]}>}
  */
 async function loadFile(subjectId, source) {
   const cacheKey = `${subjectId}-${source}`;
   if (fileCache.has(cacheKey)) return fileCache.get(cacheKey);
 
   const raw = await fetchJson(`${DATA_DIR}${cacheKey}.json`);
-  if (!Array.isArray(raw)) throw new Error(`${cacheKey}.json phải là một mảng`);
+  const parsed = parseRawFileData(raw, subjectId, source, cacheKey);
+  fileCache.set(cacheKey, parsed);
+  return parsed;
+}
 
+/**
+ * Phân tích dữ liệu JSON thô:
+ * - Nếu là cấu trúc lồng nhau (`{ categories: [...] }`) hoặc là `toan-ngoai` -> chuẩn hóa cây Chuyên đề -> Bài nhỏ -> Câu hỏi.
+ * - Nếu là mảng phẳng (`[...]`) -> chuẩn hóa danh sách câu hỏi.
+ */
+function parseRawFileData(raw, subjectId, source, cacheKey) {
   const seen = new Set();
+
+  // Trường hợp 1: Cấu trúc lồng nhau (Chuyên đề -> Bài nhỏ -> Câu hỏi)
+  const rawCategories = !Array.isArray(raw) && raw && Array.isArray(raw.categories)
+    ? raw.categories
+    : null;
+
+  if (rawCategories || (subjectId === 'toan' && source === SOURCES.NGOAI)) {
+    const sourceCats = rawCategories && rawCategories.length > 0
+      ? rawCategories
+      : DEFAULT_TOAN_NGOAI_CATEGORIES;
+
+    /** @type {CategoryNode[]} */
+    const categories = [];
+    /** @type {Question[]} */
+    const allQuestions = [];
+
+    sourceCats.forEach((catRaw, cIdx) => {
+      if (!catRaw || typeof catRaw !== 'object') return;
+      const catId = String(catRaw.id || `cat-${cIdx + 1}`).trim();
+      const catName = String(catRaw.name || `Chuyên đề ${cIdx + 1}`).trim();
+      const catIcon = String(catRaw.icon || '📂').trim();
+      const catDesc = String(catRaw.description || '').trim();
+
+      /** @type {LessonNode[]} */
+      const lessons = [];
+      const rawLessons = Array.isArray(catRaw.lessons) ? catRaw.lessons : [];
+
+      rawLessons.forEach((lesRaw, lIdx) => {
+        if (!lesRaw || typeof lesRaw !== 'object') return;
+        const lesId = String(lesRaw.id || `bai-${lIdx + 1}`).trim();
+        const lesName = String(lesRaw.name || `Bài ${lIdx + 1}`).trim();
+        const rawQs = Array.isArray(lesRaw.questions) ? lesRaw.questions : [];
+
+        /** @type {Question[]} */
+        const qs = [];
+        rawQs.forEach((qRaw, qIdx) => {
+          const q = normalizeQuestion(qRaw, {
+            subjectId,
+            source,
+            categoryId: catId,
+            lessonId: lesId,
+            index: qIdx,
+            file: `${cacheKey}/${catId}/${lesId}`,
+          });
+          if (!q) return;
+          if (seen.has(q.key)) {
+            q.key = `${q.key}#${qIdx}`;
+          }
+          seen.add(q.key);
+          qs.push(q);
+          allQuestions.push(q);
+        });
+
+        lessons.push({ id: lesId, name: lesName, questions: qs });
+      });
+
+      categories.push({
+        id: catId,
+        name: catName,
+        icon: catIcon,
+        description: catDesc,
+        lessons,
+      });
+    });
+
+    // Đảm bảo cho Toán > Đề ngoài luôn có đủ 2 danh mục Tổng hợp và Xác suất
+    if (subjectId === 'toan' && source === SOURCES.NGOAI) {
+      DEFAULT_TOAN_NGOAI_CATEGORIES.forEach((defCat) => {
+        if (!categories.some((c) => c.id === defCat.id)) {
+          categories.push(structuredClone(defCat));
+        }
+      });
+    }
+
+    return { kind: 'nested', questions: allQuestions, categories };
+  }
+
+  // Trường hợp 2: Cấu trúc mảng phẳng chuẩn
+  if (!Array.isArray(raw)) {
+    throw new Error(`${cacheKey}.json phải là một mảng câu hỏi hoặc object chứa categories`);
+  }
+
+  /** @type {Question[]} */
   const list = [];
   raw.forEach((item, i) => {
     const q = normalizeQuestion(item, { subjectId, source, index: i, file: cacheKey });
@@ -210,18 +432,13 @@ async function loadFile(subjectId, source) {
     list.push(q);
   });
 
-  fileCache.set(cacheKey, list);
-  return list;
+  return { kind: 'flat', questions: list, categories: [] };
 }
-
-/* --------------------------------------------------------------------------
-   Chuẩn hóa & kiểm tra dữ liệu
-   -------------------------------------------------------------------------- */
 
 /**
  * @param {any} raw
- * @param {{subjectId: string, source: string, index: number, file: string}} ctx
- * @returns {Question|null} null nếu dữ liệu sai (bỏ qua + cảnh báo)
+ * @param {{subjectId: string, source: string, categoryId?: string, lessonId?: string, index: number, file: string}} ctx
+ * @returns {Question|null}
  */
 function normalizeQuestion(raw, ctx) {
   const where = `${ctx.file}.json [#${ctx.index}]`;
@@ -239,13 +456,19 @@ function normalizeQuestion(raw, ctx) {
   const rawPart = Number(raw.part);
   const part = rawPart === 1 || rawPart === 2 || rawPart === 3 ? rawPart : TYPE_TO_PART[type];
 
+  const keyPrefix = ctx.categoryId && ctx.lessonId
+    ? `${ctx.subjectId}:${ctx.source}:${ctx.categoryId}:${ctx.lessonId}:${id}`
+    : `${ctx.subjectId}:${ctx.source}:${id}`;
+
   const base = {
-    key: `${ctx.subjectId}:${ctx.source}:${id}`,
+    key: keyPrefix,
     id,
     part,
     type,
     subjectId: ctx.subjectId,
     source: ctx.source,
+    categoryId: ctx.categoryId || null,
+    lessonId: ctx.lessonId || null,
     question,
     image: typeof raw.image === 'string' && raw.image.trim() ? raw.image.trim() : null,
     explanation: typeof raw.explanation === 'string' ? raw.explanation.trim() : '',
@@ -264,7 +487,7 @@ function normalizeQuestion(raw, ctx) {
 
     let answer = raw.answer;
     if (typeof answer === 'string' && /^[A-Za-z]$/.test(answer.trim())) {
-      answer = answer.trim().toUpperCase().charCodeAt(0) - 65; // "B" -> 1
+      answer = answer.trim().toUpperCase().charCodeAt(0) - 65;
     }
     answer = Number(answer);
     if (!Number.isInteger(answer) || answer < 0 || answer >= options.length) {

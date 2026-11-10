@@ -7,7 +7,7 @@
    Hằng số
    -------------------------------------------------------------------------- */
 
-/** Nguồn đề hợp lệ (đã xóa bỏ hoàn toàn tùy chọn "Gộp cả hai"). */
+/** Nguồn đề hợp lệ (chỉ có "Đề trường" và "Đề ngoài"). */
 export const SOURCES = Object.freeze({
   TRUONG: 'truong',
   NGOAI: 'ngoai',
@@ -45,6 +45,10 @@ const SETTINGS_CACHE_PREFIX = 'thkc_settings_';
  * @property {string|null} subjectId
  * @property {string}      subjectName
  * @property {string|null} source
+ * @property {string|null} categoryId
+ * @property {string|null} categoryName
+ * @property {string|null} lessonId
+ * @property {string|null} lessonName
  * @property {number[]}    parts         Các phần ôn được chọn (1, 2, 3)
  * @property {Array<Object>} questions   Danh sách câu (đã lọc phần + xáo trộn)
  * @property {Object<string, any>} answers Map qid -> câu trả lời người dùng
@@ -62,6 +66,10 @@ export function createEmptyQuiz() {
     subjectId: null,
     subjectName: '',
     source: null,
+    categoryId: null,
+    categoryName: null,
+    lessonId: null,
+    lessonName: null,
     parts: [1, 2, 3],
     questions: [],
     answers: {},
@@ -81,9 +89,14 @@ const state = {
   /** @type {Array<{id: string, name: string, icon: string, sources: string[]}>} */
   subjects: [],
   selection: {
+    /** @type {'1'|'2'|'2b'|'3'|number} */
     wizardStep: 1,
     subjectId: null,
     source: SOURCES.TRUONG,
+    categoryId: null,
+    categoryName: null,
+    lessonId: null,
+    lessonName: null,
     parts: [1, 2, 3],
   },
   quiz: createEmptyQuiz(),
@@ -219,6 +232,10 @@ export function resetSession() {
     wizardStep: 1,
     subjectId: null,
     source: SOURCES.TRUONG,
+    categoryId: null,
+    categoryName: null,
+    lessonId: null,
+    lessonName: null,
     parts: [1, 2, 3],
   };
   state.quiz = createEmptyQuiz();

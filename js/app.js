@@ -8,11 +8,16 @@
      + Khi có phiên đăng nhập -> tải song song cài đặt (`users/{uid}`),
        đẩy hàng đợi offline (`localStorage` -> Firestore), lên lịch `autoClean`
        (> 365 ngày) và dựng Trang chủ theo luồng **Wizard 3 bước**:
-       * Màn 1: Chọn môn (bấm 1 môn -> nếu môn có 2 nguồn thì sang Màn 2;
-         nếu môn chỉ có "Đề trường" như Hóa, Sinh, GDQP thì auto-skip nhảy thẳng sang Màn 3).
-       * Màn 2: Chọn nguồn đề ("Đề trường" hoặc "Đề ngoài" — đã xóa hoàn toàn "Gộp cả hai").
-       * Màn 3: Chọn phần ôn (Phần 1: MCQ, Phần 2: Đúng/Sai, Phần 3: Trả lời ngắn)
-         + Tùy chỉnh thời gian/chế độ xem + Nút CTA "Bắt đầu làm bài ngay".
+       * Màn 1 (`1`): Chọn môn (6 môn: Toán, Lý, Tin, Hóa, Sinh, GDQP).
+         - Ngoại lệ 1 (Sinh, Hóa, GDQP): chỉ có "Đề trường" -> auto-skip Màn 2, nhảy thẳng tới Màn 3.
+         - Toán, Lý, Tin: chuyển sang Màn 2.
+       * Màn 2 (`2`): Chọn nguồn đề ("Đề trường" hoặc "Đề ngoài").
+         - Ngoại lệ 2 (Lý, Tin hoặc Toán > Đề trường): chuyển thẳng sang Màn 3.
+         - Phân nhánh sâu (**Toán > Đề ngoài**): BẮT BUỘC chuyển sang Màn hình trung gian (`2b`).
+       * Màn trung gian (`2b` — Toán > Đề ngoài):
+         - Luôn hiển thị 2 danh mục **"Tổng hợp"** và **"Xác suất"** (kể cả khi chưa load được câu hỏi).
+         - Bấm vào danh mục xổ ra các bài nhỏ (Bài 1, Bài 2...). Chọn bài nhỏ xong mới qua Màn 3.
+       * Màn 3 (`3`): Chọn phần ôn (Phần 1, 2, 3) + Tùy chỉnh thời gian/cách cuộn + Nút "Bắt đầu làm bài".
    Dev by Thkc
    ========================================================================== */
 
@@ -49,6 +54,9 @@ import {
   countQuestions,
   getQuestionBreakdown,
   getSubjectById,
+  requiresCategoryStep,
+  loadNestedCategories,
+  DEFAULT_TOAN_NGOAI_CATEGORIES,
 } from './services/data.service.js';
 
 import {
@@ -111,6 +119,9 @@ function bootstrap() {
   bindAuthEvents();
   bindHomeWizardEvents();
   bindNetworkIndicators();
+
+  // Dựng sẵn giao diện mặc định cho Bước 2b (Tổng hợp / Xác suất) ngay khi khởi tạo
+  renderCategoryAccordionList(DEFAULT_TOAN_NGOAI_CATEGORIES);
 
   // 3) Tải sẵn danh sách môn học (từ cache SW hoặc mạng)
   loadSubjects()
@@ -269,7 +280,7 @@ function bindAuthEvents() {
 }
 
 /* ==========================================================================
-   TRANG CHỦ: LUỒNG WIZARD 3 BƯỚC & CHỌN PHẦN ÔN
+   TRANG CHỦ: LUỒNG WIZARD (1 -> 2 -> 2b -> 3) & CHỌN PHẦN ÔN
    ========================================================================== */
 
 function bindHomeWizardEvents() {
@@ -278,23 +289,82 @@ function bindHomeWizardEvents() {
     goToWizardStep(1);
   });
 
+  // Nút Quay lại ở Màn hình 2b (Toán > Đề ngoài) -> lùi về Màn hình 2 (Chọn nguồn đề)
+  document.getElementById('btn-back-step-2b')?.addEventListener('click', () => {
+    goToWizardStep(2);
+  });
+
   // Nút Quay lại ở Màn hình 3:
-  // Nếu môn đang chọn chỉ có 1 nguồn ("Đề trường" -> đã auto-skip Màn 2), lùi thẳng về Màn 1.
-  // Ngược lại (Toán, Lý, Tin có 2 nguồn), lùi về Màn 2.
+  // - Nếu đang ở Toán > Đề ngoài -> lùi về Màn hình 2b (Chọn chuyên đề Tổng hợp / Xác suất).
+  // - Nếu môn có 2 nguồn (Lý, Tin, hoặc Toán > Đề trường) -> lùi về Màn hình 2.
+  // - Nếu môn chỉ có 1 nguồn (Sinh, Hóa, GDQP đã auto-skip Màn 2) -> lùi thẳng về Màn hình 1.
   document.getElementById('btn-back-step-3')?.addEventListener('click', () => {
-    const subj = getSubjectById(getState('selection').subjectId);
+    const { subjectId, source } = getState('selection');
+    if (requiresCategoryStep(subjectId, source)) {
+      goToWizardStep('2b');
+      return;
+    }
+    const subj = getSubjectById(subjectId);
     const hasMultipleSources = subj && Array.isArray(subj.sources) && subj.sources.length > 1;
     goToWizardStep(hasMultipleSources ? 2 : 1);
   });
 
-  // Màn hình 2: Bấm vào 1 nút nguồn đề ("Đề trường" hoặc "Đề ngoài") -> tự chuyển sang Màn hình 3
+  // Màn hình 2: Bấm vào 1 nút nguồn đề ("Đề trường" hoặc "Đề ngoài")
   document.querySelectorAll('[data-source-btn]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const src = /** @type {HTMLElement} */ (btn).dataset.sourceBtn;
       const validSource = src === SOURCES.NGOAI ? SOURCES.NGOAI : SOURCES.TRUONG;
-      patchState('selection', { source: validSource });
-      goToWizardStep(3);
+      const { subjectId } = getState('selection');
+
+      patchState('selection', {
+        source: validSource,
+        categoryId: null,
+        categoryName: null,
+        lessonId: null,
+        lessonName: null,
+      });
+
+      // Nếu chọn Toán > Đề ngoài -> BẮT BUỘC chuyển sang Màn hình trung gian 2b (Tổng hợp / Xác suất)
+      if (requiresCategoryStep(subjectId, validSource)) {
+        goToWizardStep('2b');
+      } else {
+        goToWizardStep(3);
+      }
     });
+  });
+
+  // Màn hình 2b: Sự kiện đóng/mở danh mục Chuyên đề & chọn Bài nhỏ (delegation trên #category-accordion-list)
+  const catListEl = document.getElementById('category-accordion-list');
+  catListEl?.addEventListener('click', (e) => {
+    const target = /** @type {HTMLElement|null} */ (e.target);
+    if (!target) return;
+
+    // 1) Bấm vào nút Bài nhỏ (VD: Bài 1, Bài 2) -> lưu lựa chọn và qua Màn hình 3
+    const lessonBtn = target.closest('.lesson-btn');
+    if (lessonBtn) {
+      const catId = lessonBtn.getAttribute('data-category-id');
+      const catName = lessonBtn.getAttribute('data-category-name');
+      const lesId = lessonBtn.getAttribute('data-lesson-id');
+      const lesName = lessonBtn.getAttribute('data-lesson-name');
+
+      patchState('selection', {
+        categoryId: catId,
+        categoryName: catName,
+        lessonId: lesId,
+        lessonName: lesName,
+      });
+      goToWizardStep(3);
+      return;
+    }
+
+    // 2) Bấm vào thanh tiêu đề Chuyên đề ("Tổng hợp" / "Xác suất") -> xổ danh sách bài nhỏ
+    const headerBtn = target.closest('.category-item__header');
+    if (headerBtn) {
+      const itemEl = headerBtn.closest('.category-item');
+      if (!itemEl) return;
+      const isOpen = itemEl.classList.toggle('is-open');
+      headerBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
   });
 
   // Màn hình 3: Checkbox chọn Phần ôn (Phần 1, Phần 2, Phần 3)
@@ -317,7 +387,7 @@ function bindHomeWizardEvents() {
   // Nút CTA "Bắt đầu làm bài ngay" ở cuối Màn hình 3
   const startBtn = /** @type {HTMLButtonElement} */ (document.getElementById('btn-start'));
   startBtn?.addEventListener('click', async () => {
-    const { subjectId, source, parts } = getState('selection');
+    const { subjectId, source, categoryId, lessonId, lessonName, parts } = getState('selection');
     const subject = getSubjectById(subjectId);
     if (!subject) {
       showToast('Vui lòng chọn một môn học.', 'warning');
@@ -332,14 +402,22 @@ function bindHomeWizardEvents() {
 
     startBtn.disabled = true;
     try {
-      const questions = await loadQuestions(subjectId, source, parts);
+      const questions = await loadQuestions(subjectId, source, {
+        parts,
+        categoryId,
+        lessonId,
+      });
       if (!questions.length) {
         showToast('Không có câu hỏi nào khớp với phần ôn bạn đã chọn.', 'warning');
         return;
       }
+      const displaySubjectName = lessonName
+        ? `${subject.name} · ${lessonName}`
+        : subject.name;
+
       await startQuiz({
         subjectId: subject.id,
-        subjectName: subject.name,
+        subjectName: displaySubjectName,
         source,
         questions,
         isRetry: false,
@@ -364,10 +442,6 @@ function syncSelectedPartsFromDOM() {
 
 /**
  * Render danh sách 6 môn học ở Màn hình 1 của Wizard.
- * Khi bấm vào 1 môn:
- * - Nếu môn có cả "Đề trường" và "Đề ngoài" (Toán, Vật lý, Tin học) -> chuyển sang Màn hình 2.
- * - Nếu môn chỉ có "Đề trường" (Hóa học, Sinh học, GDQP) -> auto-skip Màn hình 2,
- *   tự gán `source: 'truong'` và nhảy thẳng sang Màn hình 3!
  * @param {Array<{id: string, name: string, icon: string, sources: string[]}>} subjects
  */
 function renderSubjectCards(subjects) {
@@ -388,7 +462,7 @@ function renderSubjectCards(subjects) {
     iconEl.textContent = subj.icon;
     nameEl.textContent = subj.name;
     if (metaEl) {
-      metaEl.textContent = subj.sources.length > 1 ? 'Đề trường · Đề ngoài' : 'Đề trường';
+      metaEl.textContent = subj.sources.length > 1 ? 'Đề trường · Đề ngoài' : 'Chỉ có Đề trường';
     }
 
     card.addEventListener('click', () => {
@@ -402,54 +476,75 @@ function renderSubjectCards(subjects) {
 }
 
 /**
- * Xử lý khi học sinh bấm chọn 1 môn ở Màn hình 1.
+ * Xử lý khi học sinh bấm chọn 1 môn ở Màn hình 1:
+ * - Ngoại lệ 1 (Sinh, Hóa, GDQP): chỉ có "Đề trường" -> auto-skip Màn 2, nhảy thẳng tới Màn 3.
+ * - Toán, Lý, Tin: có "Đề trường" và "Đề ngoài" -> chuyển sang Màn 2.
  * @param {{id: string, name: string, icon: string, sources: string[]}} subj
  */
 function handleSubjectPick(subj) {
-  // Đánh dấu thẻ môn đang chọn
   document.querySelectorAll('.subject-card').forEach((el) => {
     el.classList.toggle('is-selected', /** @type {HTMLElement} */ (el).dataset.subjectId === subj.id);
   });
 
   const hasMultipleSources = Array.isArray(subj.sources) && subj.sources.length > 1;
   if (hasMultipleSources) {
-    // Toán, Vật lý, Tin học -> sang Màn hình 2 để chọn "Đề trường" hoặc "Đề ngoài"
-    patchState('selection', { subjectId: subj.id });
+    patchState('selection', {
+      subjectId: subj.id,
+      categoryId: null,
+      categoryName: null,
+      lessonId: null,
+      lessonName: null,
+    });
     goToWizardStep(2);
   } else {
-    // Hóa học, Sinh học, GDQP -> chỉ có "Đề trường", auto-skip Màn hình 2 nhảy thẳng sang Màn hình 3
-    patchState('selection', { subjectId: subj.id, source: SOURCES.TRUONG });
+    patchState('selection', {
+      subjectId: subj.id,
+      source: SOURCES.TRUONG,
+      categoryId: null,
+      categoryName: null,
+      lessonId: null,
+      lessonName: null,
+    });
     goToWizardStep(3);
   }
 }
 
 /**
- * Chuyển đổi mượt mà giữa 3 màn hình con trong Wizard Trang chủ (không tải lại trang).
- * @param {1|2|3} step
+ * Chuyển đổi mượt mà giữa các màn hình con trong Wizard Trang chủ (`1`, `2`, `'2b'`, `3`).
+ * @param {1|2|'2b'|3} step
  */
 export function goToWizardStep(step) {
   const selection = getState('selection');
   const subject = getSubjectById(selection.subjectId);
 
-  // Nếu chưa chọn môn mà đòi vào bước 2 hoặc 3 -> đưa về bước 1
-  const targetStep = !subject && step > 1 ? 1 : step;
+  // Nếu chưa chọn môn mà đòi vào bước sau -> đưa về bước 1
+  const targetStep = !subject && step !== 1 ? 1 : step;
   patchState('selection', { wizardStep: targetStep });
 
-  // Ẩn/hiện 3 khung wizard-pane
-  for (let i = 1; i <= 3; i += 1) {
-    const pane = document.getElementById(`wizard-step-${i}`);
-    if (pane) pane.hidden = i !== targetStep;
-  }
+  // Ẩn/hiện các khung wizard-pane (1, 2, 2b, 3)
+  const panes = [
+    { id: 'wizard-step-1', key: 1 },
+    { id: 'wizard-step-2', key: 2 },
+    { id: 'wizard-step-2b', key: '2b' },
+    { id: 'wizard-step-3', key: 3 },
+  ];
+  panes.forEach(({ id, key }) => {
+    const el = document.getElementById(id);
+    if (el) el.hidden = String(key) !== String(targetStep);
+  });
 
-  // Cập nhật thanh chỉ báo tiến trình Wizard (1 - 2 - 3)
+  // Cập nhật thanh chỉ báo tiến trình Wizard (Bước 2b vẫn sáng ở chỉ báo số 2)
+  const numericStep = targetStep === '2b' ? 2 : Number(targetStep);
   document.querySelectorAll('[data-step-indicator]').forEach((el) => {
     const s = Number(/** @type {HTMLElement} */ (el).dataset.stepIndicator);
-    el.classList.toggle('is-active', s === targetStep);
-    el.classList.toggle('is-done', s < targetStep);
+    el.classList.toggle('is-active', s === numericStep);
+    el.classList.toggle('is-done', s < numericStep);
   });
 
   if (targetStep === 2 && subject) {
     populateStep2Sources(subject);
+  } else if (targetStep === '2b' && subject) {
+    populateStep2bCategories(subject);
   } else if (targetStep === 3 && subject) {
     populateStep3Config(subject);
   }
@@ -465,13 +560,11 @@ async function populateStep2Sources(subject) {
   const badgeEl = document.getElementById('step2-subject-badge');
   if (badgeEl) badgeEl.textContent = `${subject.icon} ${subject.name}`;
 
-  // Ẩn/hiện nút nguồn đề tùy theo cấu hình môn học
   document.querySelectorAll('[data-source-btn]').forEach((btn) => {
     const src = /** @type {HTMLElement} */ (btn).dataset.sourceBtn;
     /** @type {HTMLElement} */ (btn).hidden = !subject.sources.includes(src);
   });
 
-  // Hiển thị số câu hỏi của từng nguồn đề
   const truongInfo = document.getElementById('source-count-truong');
   const ngoaiInfo = document.getElementById('source-count-ngoai');
 
@@ -488,10 +581,144 @@ async function populateStep2Sources(subject) {
       : 'Đề cương & ngân hàng câu hỏi chính khóa';
   }
   if (ngoaiInfo) {
-    ngoaiInfo.textContent = cNgoai !== null
-      ? (cNgoai > 0 ? `Đề mở rộng · Hiện có ${cNgoai} câu` : 'Đề mở rộng · Chưa có câu hỏi (0 câu)')
-      : 'Đề sưu tầm & luyện tập mở rộng';
+    if (subject.id === 'toan') {
+      ngoaiInfo.textContent = cNgoai !== null
+        ? `Chuyên đề Tổng hợp & Xác suất · Hiện có ${cNgoai} câu`
+        : 'Chuyên đề Tổng hợp & Xác suất (Chọn bài nhỏ)';
+    } else {
+      ngoaiInfo.textContent = cNgoai !== null
+        ? (cNgoai > 0 ? `Đề mở rộng · Hiện có ${cNgoai} câu` : 'Đề mở rộng · Chưa có câu hỏi (0 câu)')
+        : 'Đề sưu tầm & luyện tập mở rộng';
+    }
   }
+}
+
+/**
+ * Cập nhật giao diện Màn hình trung gian 2b (Toán > Đề ngoài: Chuyên đề "Tổng hợp" & "Xác suất" -> Bài nhỏ).
+ * Luôn hiển thị ngay lập tức bộ khung mặc định trước, sau đó mới cập nhật dữ liệu thực tế từ JSON.
+ * @param {{id: string, name: string, icon: string, sources: string[]}} subject
+ */
+async function populateStep2bCategories(subject) {
+  const badgeEl = document.getElementById('step2b-subject-badge');
+  if (badgeEl) badgeEl.textContent = `${subject.icon} ${subject.name}`;
+
+  // 1) Hiển thị ngay lập tức 2 danh mục Tổng hợp & Xác suất để UI không bao giờ bị trống/ẩn
+  renderCategoryAccordionList(DEFAULT_TOAN_NGOAI_CATEGORIES);
+
+  // 2) Tải dữ liệu lồng nhau từ data/toan-ngoai.json và cập nhật số lượng câu của từng bài nhỏ
+  const categories = await loadNestedCategories(subject.id, SOURCES.NGOAI);
+  if (categories && categories.length > 0) {
+    renderCategoryAccordionList(categories);
+  }
+}
+
+/**
+ * Dựng danh sách các Chuyên đề (Tổng hợp, Xác suất) và các nút Bài nhỏ bên trong `#category-accordion-list`.
+ * @param {Array<{id: string, name: string, icon?: string, description?: string, lessons?: Array<{id: string, name: string, questions?: any[]}>}>} categories
+ */
+function renderCategoryAccordionList(categories) {
+  const listEl = document.getElementById('category-accordion-list');
+  if (!listEl) return;
+
+  const safeCategories = Array.isArray(categories) && categories.length > 0
+    ? categories
+    : DEFAULT_TOAN_NGOAI_CATEGORIES;
+
+  listEl.innerHTML = '';
+  const frag = document.createDocumentFragment();
+
+  safeCategories.forEach((cat, idx) => {
+    const item = document.createElement('div');
+    // Mở sẵn danh mục đầu tiên để học sinh thấy ngay các bài nhỏ bên trong
+    const isOpen = idx === 0;
+    item.className = `category-item${isOpen ? ' is-open' : ''}`;
+    item.dataset.categoryId = cat.id;
+
+    const headerBtn = document.createElement('button');
+    headerBtn.type = 'button';
+    headerBtn.className = 'category-item__header';
+    headerBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'category-item__icon';
+    iconSpan.setAttribute('aria-hidden', 'true');
+    iconSpan.textContent = cat.icon || (cat.id === 'xacsuat' ? '🎲' : '📚');
+
+    const infoSpan = document.createElement('span');
+    infoSpan.className = 'category-item__info';
+
+    const titleStrong = document.createElement('strong');
+    titleStrong.className = 'category-item__title';
+    titleStrong.textContent = cat.name;
+
+    const descSmall = document.createElement('small');
+    descSmall.className = 'category-item__desc muted';
+    const lessonCount = Array.isArray(cat.lessons) ? cat.lessons.length : 0;
+    descSmall.textContent = cat.description
+      ? `${cat.description} (${lessonCount} bài)`
+      : `Gồm ${lessonCount} bài luyện tập`;
+
+    infoSpan.appendChild(titleStrong);
+    infoSpan.appendChild(descSmall);
+
+    const chevronSpan = document.createElement('span');
+    chevronSpan.className = 'category-item__chevron';
+    chevronSpan.setAttribute('aria-hidden', 'true');
+    chevronSpan.textContent = '▾';
+
+    headerBtn.appendChild(iconSpan);
+    headerBtn.appendChild(infoSpan);
+    headerBtn.appendChild(chevronSpan);
+
+    const lessonsWrap = document.createElement('div');
+    lessonsWrap.className = 'category-item__lessons';
+
+    const lessons = Array.isArray(cat.lessons) && cat.lessons.length > 0
+      ? cat.lessons
+      : [
+          { id: 'bai-1', name: 'Bài 1', questions: [] },
+          { id: 'bai-2', name: 'Bài 2', questions: [] },
+        ];
+
+    lessons.forEach((les) => {
+      const lesBtn = document.createElement('button');
+      lesBtn.type = 'button';
+      lesBtn.className = 'lesson-btn';
+      lesBtn.setAttribute('data-category-id', cat.id);
+      lesBtn.setAttribute('data-category-name', cat.name);
+      lesBtn.setAttribute('data-lesson-id', les.id);
+      lesBtn.setAttribute('data-lesson-name', `${cat.name} · ${les.name}`);
+
+      const nameSpan = document.createElement('span');
+      nameSpan.className = 'lesson-btn__name';
+      nameSpan.textContent = les.name;
+
+      const metaSpan = document.createElement('span');
+      metaSpan.className = 'lesson-btn__meta';
+
+      const qCount = Array.isArray(les.questions) ? les.questions.length : 0;
+      const badge = document.createElement('span');
+      badge.className = 'badge badge--info';
+      badge.textContent = `${qCount} câu`;
+
+      const arrow = document.createElement('span');
+      arrow.className = 'muted';
+      arrow.textContent = '›';
+
+      metaSpan.appendChild(badge);
+      metaSpan.appendChild(arrow);
+
+      lesBtn.appendChild(nameSpan);
+      lesBtn.appendChild(metaSpan);
+      lessonsWrap.appendChild(lesBtn);
+    });
+
+    item.appendChild(headerBtn);
+    item.appendChild(lessonsWrap);
+    frag.appendChild(item);
+  });
+
+  listEl.appendChild(frag);
 }
 
 /**
@@ -499,17 +726,32 @@ async function populateStep2Sources(subject) {
  * @param {{id: string, name: string, icon: string, sources: string[]}} subject
  */
 async function populateStep3Config(subject) {
-  const { source } = getState('selection');
+  const { source, lessonName } = getState('selection');
   const subjBadge = document.getElementById('step3-subject-badge');
   const srcBadge = document.getElementById('step3-source-badge');
+  const lesBadge = document.getElementById('step3-lesson-badge');
   const backBtn = document.getElementById('btn-back-step-3');
 
   if (subjBadge) subjBadge.textContent = `${subject.icon} ${subject.name}`;
   if (srcBadge) srcBadge.textContent = SOURCE_LABELS[source] || 'Đề trường';
+
+  if (lesBadge) {
+    if (lessonName) {
+      lesBadge.textContent = lessonName;
+      lesBadge.hidden = false;
+    } else {
+      lesBadge.hidden = true;
+    }
+  }
+
   if (backBtn) {
-    backBtn.textContent = subject.sources.length > 1
-      ? '← Quay lại chọn nguồn đề'
-      : '← Quay lại chọn môn';
+    if (requiresCategoryStep(subject.id, source)) {
+      backBtn.textContent = '← Quay lại chọn bài';
+    } else if (subject.sources.length > 1) {
+      backBtn.textContent = '← Quay lại chọn nguồn đề';
+    } else {
+      backBtn.textContent = '← Quay lại chọn môn';
+    }
   }
 
   syncStep3InlineSettingsUI();
@@ -523,7 +765,7 @@ async function populateStep3Config(subject) {
 async function updateStep3BreakdownAndPreview() {
   const infoEl = document.getElementById('question-count-info');
   const startBtn = /** @type {HTMLButtonElement} */ (document.getElementById('btn-start'));
-  const { subjectId, source, parts } = getState('selection');
+  const { subjectId, source, categoryId, lessonId, lessonName, parts } = getState('selection');
   const subject = getSubjectById(subjectId);
 
   if (!subject) {
@@ -532,8 +774,8 @@ async function updateStep3BreakdownAndPreview() {
     return;
   }
 
-  const breakdown = await getQuestionBreakdown(subjectId, source);
-  const srcLabel = SOURCE_LABELS[source] || 'Đề trường';
+  const breakdown = await getQuestionBreakdown(subjectId, source, { categoryId, lessonId });
+  const srcLabel = lessonName || SOURCE_LABELS[source] || 'Đề trường';
 
   if (!breakdown) {
     if (infoEl) infoEl.textContent = `Không đọc được dữ liệu ${subject.name} (${srcLabel}).`;
@@ -549,7 +791,7 @@ async function updateStep3BreakdownAndPreview() {
 
   if (breakdown.total === 0) {
     if (infoEl) {
-      infoEl.textContent = `${subject.name} · ${srcLabel}: Nguồn đề này hiện chưa có câu hỏi nào (0 câu). Bạn có thể quay lại chọn "Đề trường".`;
+      infoEl.textContent = `${subject.name} · ${srcLabel}: Nguồn đề này hiện chưa có câu hỏi nào (0 câu). Bạn có thể quay lại chọn nguồn đề khác.`;
     }
     if (startBtn) startBtn.disabled = true;
     return;

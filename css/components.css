@@ -1426,3 +1426,126 @@
   box-shadow: 0 8px 24px rgba(122, 162, 247, 0.48);
 }
 
+/* ==========================================================================
+   BƯỚC 2B (TOÁN > ĐỀ NGOÀI): CHUYÊN ĐỀ (TỔNG HỢP / XÁC SUẤT) & BÀI NHỎ
+   ========================================================================== */
+.category-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.category-item {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: border-color var(--dur-base);
+}
+
+.category-item.is-open {
+  border-color: var(--c-primary);
+}
+
+.category-item__header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-4);
+  text-align: left;
+  transition: background-color var(--dur-fast);
+}
+
+.category-item__header:hover {
+  background: var(--c-surface-hover);
+}
+
+.category-item__icon {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--c-bg-elevated);
+  font-size: 1.4rem;
+}
+
+.category-item__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.category-item__title {
+  font-size: var(--fs-base);
+  color: var(--c-text);
+}
+
+.category-item__desc {
+  font-size: var(--fs-xs);
+}
+
+.category-item__chevron {
+  font-size: var(--fs-lg);
+  color: var(--c-text-muted);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.category-item.is-open .category-item__chevron {
+  transform: rotate(180deg);
+  color: var(--c-primary);
+}
+
+.category-item__lessons {
+  display: none;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: 0 var(--sp-4) var(--sp-4);
+  border-top: 1px dashed var(--c-border);
+  padding-top: var(--sp-3);
+}
+
+.category-item.is-open .category-item__lessons {
+  display: flex;
+}
+
+.lesson-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  width: 100%;
+  min-height: 48px;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--c-bg-elevated);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  text-align: left;
+  transition: border-color var(--dur-fast), background-color var(--dur-fast), transform var(--dur-fast);
+}
+
+.lesson-btn:hover {
+  background: var(--c-primary-soft);
+  border-color: var(--c-primary);
+}
+
+.lesson-btn:active {
+  transform: scale(0.99);
+}
+
+.lesson-btn__name {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semi);
+  color: var(--c-text);
+}
+
+.lesson-btn__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}

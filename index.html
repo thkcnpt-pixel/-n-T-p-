@@ -210,6 +210,55 @@
           </section>
         </div>
 
+        <!-- ==================== WIZARD BƯỚC 2B (MỞ RỘNG CHO TOÁN > ĐỀ NGOÀI): CHỌN CHUYÊN ĐỀ & BÀI NHỎ ==================== -->
+        <div id="wizard-step-2b" class="wizard-pane" data-wizard-step="2b" hidden>
+          <div class="wizard-Subhead">
+            <button type="button" id="btn-back-step-2b" class="btn btn--ghost btn--sm">
+              ← Quay lại chọn nguồn đề
+            </button>
+            <div class="chip-list">
+              <span id="step2b-subject-badge" class="badge badge--info">📐 Toán học</span>
+              <span class="badge">Đề ngoài</span>
+            </div>
+          </div>
+
+          <section class="panel" aria-labelledby="h-category">
+            <h2 id="h-category" class="panel__title"><span class="step">2.2</span> Chọn chuyên đề &amp; bài ôn tập</h2>
+            <p class="muted small">Bấm vào chuyên đề (<strong>Tổng hợp</strong> hoặc <strong>Xác suất</strong>) để xổ ra danh sách các bài nhỏ:</p>
+
+            <!-- Luôn hiển thị sẵn 2 danh mục Tổng hợp và Xác suất trong DOM để không bao giờ bị ẩn -->
+            <div id="category-accordion-list" class="category-list">
+              <div class="category-item is-open" data-category-id="tonghop">
+                <button type="button" class="category-item__header" aria-expanded="true">
+                  <span class="category-item__icon" aria-hidden="true">📚</span>
+                  <span class="category-item__info">
+                    <strong class="category-item__title">Tổng hợp</strong>
+                    <small class="category-item__desc muted">Các đề ôn tập tổng hợp kiến thức Giải tích &amp; Hình học</small>
+                  </span>
+                  <span class="category-item__chevron" aria-hidden="true">▾</span>
+                </button>
+                <div class="category-item__lessons">
+                  <!-- JS đổ danh sách các nút Bài 1, Bài 2... vào đây -->
+                </div>
+              </div>
+
+              <div class="category-item" data-category-id="xacsuat">
+                <button type="button" class="category-item__header" aria-expanded="false">
+                  <span class="category-item__icon" aria-hidden="true">🎲</span>
+                  <span class="category-item__info">
+                    <strong class="category-item__title">Xác suất</strong>
+                    <small class="category-item__desc muted">Tổ hợp, Xác suất cổ điển và Xác suất có điều kiện</small>
+                  </span>
+                  <span class="category-item__chevron" aria-hidden="true">▾</span>
+                </button>
+                <div class="category-item__lessons">
+                  <!-- JS đổ danh sách các nút Bài 1, Bài 2... vào đây -->
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
         <!-- ==================== WIZARD BƯỚC 3: CẤU TRÚC & TÙY CHỈNH ==================== -->
         <div id="wizard-step-3" class="wizard-pane" data-wizard-step="3" hidden>
           <div class="wizard-Subhead">
@@ -219,6 +268,7 @@
             <div class="chip-list">
               <span id="step3-subject-badge" class="badge badge--info"></span>
               <span id="step3-source-badge" class="badge"></span>
+              <span id="step3-lesson-badge" class="badge badge--warn" hidden></span>
             </div>
           </div>
 
