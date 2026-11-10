@@ -1,6 +1,7 @@
 [
   {
     "id": "vatly-1",
+    "part": 1,
     "type": "mcq",
     "question": "Quan sát sơ đồ mạch điện hình bên dưới. Biết hiệu điện thế nguồn $U = 12\\text{ V}$ và hai điện trở mắc nối tiếp $R_1 = 2\\,\\Omega$, $R_2 = 4\\,\\Omega$. Cường độ dòng điện $I$ chạy trong mạch chính là bao nhiêu?",
     "image": "images/sample.jpg",
@@ -15,6 +16,7 @@
   },
   {
     "id": "vatly-2",
+    "part": 2,
     "type": "truefalse",
     "question": "Trong chân không, mọi sóng điện từ đều lan truyền với cùng tốc độ bằng tốc độ ánh sáng $c \\approx 3 \\times 10^8\\text{ m/s}$.",
     "answer": true,
@@ -22,6 +24,7 @@
   },
   {
     "id": "vatly-3",
+    "part": 3,
     "type": "short",
     "question": "Đơn vị đo công suất điện trong hệ đo lường quốc tế SI có tên gọi là gì?",
     "answer": ["watt", "oat", "oát", "w"],

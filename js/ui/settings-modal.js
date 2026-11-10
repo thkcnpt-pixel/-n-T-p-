@@ -1,9 +1,9 @@
 /* ==========================================================================
-   js/ui/settings-modal.js — Popup Cài đặt làm bài & tóm tắt cài đặt
+   js/ui/settings-modal.js — Popup Cài đặt làm bài & đồng bộ với Bước 3 Wizard
    - Mở/đóng `<dialog id="settings-dialog">`, khóa cuộn nền (`body.is-locked`).
    - Đọc/ghi cấu hình qua `state.js` & `profile.service.js` (tự động đồng bộ
      lên Firestore hoặc xếp vào hàng đợi offline).
-   - Render danh sách chip tóm tắt cài đặt (`#settings-summary`) ở Trang chủ.
+   - Đồng bộ 2 chiều với bảng tùy chỉnh trực tiếp ở Màn hình 3 (Wizard).
    Dev by Thkc
    ========================================================================== */
 
@@ -16,7 +16,7 @@ let initialized = false;
 let toastFn = null;
 
 /**
- * Khởi tạo Popup Cài đặt và tự động cập nhật chip tóm tắt khi `state.settings` đổi.
+ * Khởi tạo Popup Cài đặt và bảng cài đặt trực tiếp tại Bước 3.
  * @param {{toast?: (msg: string, type?: string) => void}} [helpers]
  */
 export function initSettingsModal({ toast } = {}) {
@@ -29,7 +29,7 @@ export function initSettingsModal({ toast } = {}) {
   const timeInput = /** @type {HTMLInputElement} */ (document.getElementById('set-time'));
   const timeOutput = /** @type {HTMLOutputElement} */ (document.getElementById('set-time-output'));
 
-  // Mọi nút có data-action="open-settings" (ở Trang chủ và Header Làm bài)
+  // Mọi nút có data-action="open-settings" (ở Topbar, Bước 3 và Header Làm bài)
   document.addEventListener('click', (e) => {
     const target = /** @type {HTMLElement|null} */ (e.target);
     if (target?.closest?.('[data-action="open-settings"]')) {
@@ -48,12 +48,12 @@ export function initSettingsModal({ toast } = {}) {
     document.body.classList.remove('is-locked');
   });
 
-  // Cập nhật số phút hiển thị ngay khi kéo thanh trượt
+  // Cập nhật số phút hiển thị ngay khi kéo thanh trượt trong Popup
   timeInput?.addEventListener('input', () => {
     updateTimeLabel(Number(timeInput.value), timeOutput);
   });
 
-  // Lưu cài đặt
+  // Lưu cài đặt từ Popup
   form?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const saveBtn = /** @type {HTMLButtonElement} */ (document.getElementById('btn-save-settings'));
@@ -83,9 +83,82 @@ export function initSettingsModal({ toast } = {}) {
     }
   });
 
-  // Tự động vẽ lại chip tóm tắt mỗi khi settings thay đổi
-  subscribe('settings', () => renderSettingsSummary());
+  // Gắn sự kiện cho các điều khiển cài đặt trực tiếp tại Bước 3 (Wizard)
+  bindStep3InlineSettings();
+
+  // Tự động đồng bộ UI mỗi khi settings thay đổi
+  subscribe('settings', () => {
+    syncStep3InlineSettingsUI();
+    renderSettingsSummary();
+  });
+
+  syncStep3InlineSettingsUI();
   renderSettingsSummary();
+}
+
+/**
+ * Gắn sự kiện thay đổi trực tiếp trên Bước 3 (thời gian, chế độ cuộn/từng câu,
+ * xem giải thích, xáo trộn câu/đáp án) và tự động lưu lên tài khoản.
+ */
+function bindStep3InlineSettings() {
+  const s3Time = /** @type {HTMLInputElement} */ (document.getElementById('step3-time'));
+  const s3TimeOut = /** @type {HTMLOutputElement} */ (document.getElementById('step3-time-output'));
+  const s3ShuffleQ = /** @type {HTMLInputElement} */ (document.getElementById('step3-shuffle-q'));
+  const s3ShuffleO = /** @type {HTMLInputElement} */ (document.getElementById('step3-shuffle-o'));
+
+  s3Time?.addEventListener('input', () => {
+    updateTimeLabel(Number(s3Time.value), s3TimeOut);
+  });
+
+  s3Time?.addEventListener('change', () => {
+    saveSettings({ timeLimit: Number(s3Time.value) });
+  });
+
+  s3ShuffleQ?.addEventListener('change', () => {
+    saveSettings({ shuffleQuestions: s3ShuffleQ.checked });
+  });
+
+  s3ShuffleO?.addEventListener('change', () => {
+    saveSettings({ shuffleOptions: s3ShuffleO.checked });
+  });
+
+  document.querySelectorAll('input[name="step3ViewMode"]').forEach((r) => {
+    r.addEventListener('change', (e) => {
+      const val = /** @type {HTMLInputElement} */ (e.target).value;
+      saveSettings({ viewMode: val === 'single' ? 'single' : 'scroll' });
+    });
+  });
+
+  document.querySelectorAll('input[name="step3ExplainMode"]').forEach((r) => {
+    r.addEventListener('change', (e) => {
+      const val = /** @type {HTMLInputElement} */ (e.target).value;
+      saveSettings({ explainMode: val === 'instant' ? 'instant' : 'after' });
+    });
+  });
+}
+
+/** Đổ giá trị từ `state.settings` vào bảng tùy chỉnh trực tiếp ở Bước 3. */
+export function syncStep3InlineSettingsUI() {
+  const s = getState('settings');
+  const s3Time = /** @type {HTMLInputElement} */ (document.getElementById('step3-time'));
+  const s3TimeOut = /** @type {HTMLOutputElement} */ (document.getElementById('step3-time-output'));
+  const s3ShuffleQ = /** @type {HTMLInputElement} */ (document.getElementById('step3-shuffle-q'));
+  const s3ShuffleO = /** @type {HTMLInputElement} */ (document.getElementById('step3-shuffle-o'));
+
+  if (s3Time) {
+    s3Time.value = String(s.timeLimit);
+    updateTimeLabel(s.timeLimit, s3TimeOut);
+  }
+  if (s3ShuffleQ) s3ShuffleQ.checked = Boolean(s.shuffleQuestions);
+  if (s3ShuffleO) s3ShuffleO.checked = Boolean(s.shuffleOptions);
+
+  document.querySelectorAll('input[name="step3ViewMode"]').forEach((r) => {
+    /** @type {HTMLInputElement} */ (r).checked = /** @type {HTMLInputElement} */ (r).value === s.viewMode;
+  });
+
+  document.querySelectorAll('input[name="step3ExplainMode"]').forEach((r) => {
+    /** @type {HTMLInputElement} */ (r).checked = /** @type {HTMLInputElement} */ (r).value === s.explainMode;
+  });
 }
 
 /** Mở popup và đổ dữ liệu từ `state.settings` vào form. */
@@ -134,7 +207,7 @@ function setRadioValue(form, name, value) {
 }
 
 /**
- * Render danh sách chip tóm tắt cài đặt ở `#settings-summary` trên Trang chủ.
+ * Render danh sách chip tóm tắt cài đặt ở `#settings-summary`.
  */
 export function renderSettingsSummary() {
   const listEl = document.getElementById('settings-summary');

@@ -1,0 +1,32 @@
+[
+  {
+    "id": "gdqp-1",
+    "part": 1,
+    "type": "mcq",
+    "question": "Theo Luật Nghĩa vụ quân sự Việt Nam hiện hành, độ tuổi gọi công dân nhập ngũ trong thời bình (đối với công dân không thuộc diện tạm hoãn đại học, cao đẳng) là từ đủ bao nhiêu tuổi đến hết bao nhiêu tuổi?",
+    "options": [
+      { "text": "Từ đủ 18 tuổi đến hết 25 tuổi", "shuffle": true },
+      { "text": "Từ đủ 17 tuổi đến hết 24 tuổi", "shuffle": true },
+      { "text": "Từ đủ 19 tuổi đến hết 26 tuổi", "shuffle": true },
+      { "text": "Từ đủ 20 tuổi đến hết 28 tuổi", "shuffle": true }
+    ],
+    "answer": 0,
+    "explanation": "Theo Điều 30 Luật Nghĩa vụ quân sự 2015: Công dân đủ 18 tuổi được gọi nhập ngũ; độ tuổi gọi nhập ngũ từ đủ 18 tuổi đến hết 25 tuổi (công dân được đào tạo trình độ cao đẳng, đại học đã được tạm hoãn thì gọi nhập ngũ đến hết 27 tuổi)."
+  },
+  {
+    "id": "gdqp-2",
+    "part": 2,
+    "type": "truefalse",
+    "question": "Trong điều lệnh đội ngũ từng người không có súng, khẩu lệnh \"Nghiêm\" chỉ có động lệnh mà không có dự lệnh.",
+    "answer": true,
+    "explanation": "Đúng. Khẩu lệnh \"Nghiêm!\" chỉ có động lệnh, không có dự lệnh. Khi nghe dứt động lệnh \"Nghiêm\", hai gót chân đặt sát nhau, hai bàn chân mở một góc khoảng $45^\\circ$."
+  },
+  {
+    "id": "gdqp-3",
+    "part": 3,
+    "type": "short",
+    "question": "Số điện thoại khẩn cấp toàn quốc để gọi lực lượng Cảnh sát Phòng cháy chữa cháy và Cứu nạn cứu hộ tại Việt Nam là số nào?",
+    "answer": ["114"],
+    "explanation": "Các đầu số khẩn cấp tại Việt Nam: 113 (Cảnh sát phản ứng nhanh), 114 (Phòng cháy chữa cháy & Cứu nạn cứu hộ), 115 (Cấp cứu y tế)."
+  }
+]

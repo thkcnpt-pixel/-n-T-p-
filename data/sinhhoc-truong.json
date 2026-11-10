@@ -1,0 +1,32 @@
+[
+  {
+    "id": "sinhhoc-1",
+    "part": 1,
+    "type": "mcq",
+    "question": "Bào quan nào trong tế bào nhân thực được mệnh danh là \"nhà máy phát điện\" vì thực hiện quá trình hô hấp tế bào tạo ra phần lớn $\\text{ATP}$?",
+    "options": [
+      { "text": "Ti thể (Mitochondria)", "shuffle": true },
+      { "text": "Ribosome", "shuffle": true },
+      { "text": "Bộ máy Golgi", "shuffle": true },
+      { "text": "Không bào", "shuffle": true }
+    ],
+    "answer": 0,
+    "explanation": "Ti thể là nơi diễn ra chuỗi truyền electron và chu trình Krebs trong hô hấp hiếu khí, tổng hợp năng lượng dưới dạng phân tử $\\text{ATP}$ cho tế bào."
+  },
+  {
+    "id": "sinhhoc-2",
+    "part": 2,
+    "type": "truefalse",
+    "question": "Theo nguyên tắc bổ sung trong cấu trúc phân tử $\\text{DNA}$ mạch kép, bazơ nitơ Adenin ($\\text{A}$) luôn liên kết với Timin ($\\text{T}$) bằng 2 liên kết hiđro, còn Guanin ($\\text{G}$) liên kết với Xitozin ($\\text{C}$) bằng 3 liên kết hiđro.",
+    "answer": true,
+    "explanation": "Đúng. Trong $\\text{DNA}$ mạch kép: $\\text{A}$ liên kết với $\\text{T}$ bằng 2 liên kết hiđro ($\\text{A}=\\text{T}$) và $\\text{G}$ liên kết với $\\text{C}$ bằng 3 liên kết hiđro ($\\text{G}\\equiv\\text{C}$)."
+  },
+  {
+    "id": "sinhhoc-3",
+    "part": 3,
+    "type": "short",
+    "question": "Ở người bình thường khỏe mạnh, bộ nhiễm sắc thể lưỡng bội $2n$ trong mỗi tế bào sinh dưỡng có bao nhiêu nhiễm sắc thể?",
+    "answer": ["46", "46 nst"],
+    "explanation": "Bộ nhiễm sắc thể lưỡng bội của loài người là $2n = 46$ (gồm 22 cặp NST thường và 1 cặp NST giới tính)."
+  }
+]

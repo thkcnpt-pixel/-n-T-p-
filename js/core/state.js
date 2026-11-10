@@ -7,18 +7,23 @@
    Hằng số
    -------------------------------------------------------------------------- */
 
-/** Nguồn đề hợp lệ trên trang chủ. */
+/** Nguồn đề hợp lệ (đã xóa bỏ hoàn toàn tùy chọn "Gộp cả hai"). */
 export const SOURCES = Object.freeze({
   TRUONG: 'truong',
   NGOAI: 'ngoai',
-  ALL: 'all',
 });
 
 export const SOURCE_LABELS = Object.freeze({
   truong: 'Đề trường',
   ngoai: 'Đề ngoài',
-  all: 'Gộp cả hai',
 });
+
+/** Các phần ôn (dạng câu hỏi) theo format đề mới. */
+export const QUIZ_PARTS = Object.freeze([
+  { id: 1, type: 'mcq', label: 'Phần 1: Trắc nghiệm nhiều lựa chọn' },
+  { id: 2, type: 'truefalse', label: 'Phần 2: Trắc nghiệm Đúng/Sai' },
+  { id: 3, type: 'short', label: 'Phần 3: Trắc nghiệm Trả lời ngắn' },
+]);
 
 /** Cài đặt mặc định (được đồng bộ lên users/{uid}.settings). */
 export const DEFAULT_SETTINGS = Object.freeze({
@@ -40,14 +45,15 @@ const SETTINGS_CACHE_PREFIX = 'thkc_settings_';
  * @property {string|null} subjectId
  * @property {string}      subjectName
  * @property {string|null} source
- * @property {Array<Object>} questions     Danh sách câu (đã xáo nếu bật)
+ * @property {number[]}    parts         Các phần ôn được chọn (1, 2, 3)
+ * @property {Array<Object>} questions   Danh sách câu (đã lọc phần + xáo trộn)
  * @property {Object<string, any>} answers Map qid -> câu trả lời người dùng
  * @property {Object<string, boolean>} checked Map qid -> đã chấm tức thì (instant mode)
- * @property {number}  currentIndex        Vị trí câu ở chế độ Từng câu
- * @property {number}  startedAt           Date.now() khi bắt đầu
- * @property {number}  durationSec         Tổng thời gian cho phép (0 = không giới hạn)
+ * @property {number}  currentIndex      Vị trí câu ở chế độ Từng câu
+ * @property {number}  startedAt         Date.now() khi bắt đầu
+ * @property {number}  durationSec       Tổng thời gian cho phép (0 = không giới hạn)
  * @property {boolean} submitted
- * @property {boolean} isRetry             Đang làm lại câu sai
+ * @property {boolean} isRetry           Đang làm lại câu sai
  */
 
 /** @returns {QuizState} */
@@ -56,6 +62,7 @@ export function createEmptyQuiz() {
     subjectId: null,
     subjectName: '',
     source: null,
+    parts: [1, 2, 3],
     questions: [],
     answers: {},
     checked: {},
@@ -71,9 +78,14 @@ const state = {
   /** @type {{uid: string, email: string} | null} */
   user: null,
   settings: { ...DEFAULT_SETTINGS },
-  /** @type {Array<{id: string, name: string, icon?: string}>} */
+  /** @type {Array<{id: string, name: string, icon: string, sources: string[]}>} */
   subjects: [],
-  selection: { subjectId: null, source: SOURCES.TRUONG },
+  selection: {
+    wizardStep: 1,
+    subjectId: null,
+    source: SOURCES.TRUONG,
+    parts: [1, 2, 3],
+  },
   quiz: createEmptyQuiz(),
   /** Kết quả lần nộp gần nhất (dùng cho màn Kết quả & "làm lại câu sai") */
   lastResult: null,
@@ -90,7 +102,6 @@ const listeners = new Map();
 
 /**
  * Đọc 1 nhánh trạng thái (hoặc toàn bộ nếu không truyền key).
- * Lưu ý: trả về tham chiếu trực tiếp — chỉ sửa qua setState/patchState.
  * @param {keyof typeof state} [key]
  */
 export function getState(key) {
@@ -165,7 +176,6 @@ export function normalizeSettings(raw = {}) {
 
 /**
  * Cập nhật cài đặt trong state + cache localStorage (để mở app offline vẫn đúng).
- * Việc đẩy lên Firestore do profile.service.js đảm nhiệm.
  * @param {Partial<typeof DEFAULT_SETTINGS>} partial
  */
 export function updateSettings(partial) {
@@ -205,7 +215,12 @@ export function resetQuiz() {
 export function resetSession() {
   state.user = null;
   state.settings = { ...DEFAULT_SETTINGS };
-  state.selection = { subjectId: null, source: SOURCES.TRUONG };
+  state.selection = {
+    wizardStep: 1,
+    subjectId: null,
+    source: SOURCES.TRUONG,
+    parts: [1, 2, 3],
+  };
   state.quiz = createEmptyQuiz();
   state.lastResult = null;
   state.pendingCount = 0;

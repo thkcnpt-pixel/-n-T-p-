@@ -1,6 +1,7 @@
 [
   {
     "id": "toan-1",
+    "part": 1,
     "type": "mcq",
     "question": "Tìm giá trị của tích phân xác định sau:\n$$I = \\int_{0}^{\\pi/2} \\sin(x)\\,\\mathrm{d}x$$\nGiá trị của $I$ bằng bao nhiêu?",
     "options": [
@@ -14,6 +15,7 @@
   },
   {
     "id": "toan-2",
+    "part": 2,
     "type": "truefalse",
     "question": "Mệnh đề sau đúng hay sai: Phương trình bậc hai $x^2 - 4x + 4 = 0$ có biệt thức $\\Delta = b^2 - 4ac = 0$ nên có nghiệm kép $x_1 = x_2 = 2$.",
     "answer": true,
@@ -21,6 +23,7 @@
   },
   {
     "id": "toan-3",
+    "part": 3,
     "type": "short",
     "question": "Cho hàm số $f(x) = x^3 - 3x + 2$. Tính giá trị đạo hàm $f'(2)$ tại điểm $x = 2$.",
     "answer": ["9", "9.0"],

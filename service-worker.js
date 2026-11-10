@@ -10,7 +10,7 @@
    Dev by Thkc
    ========================================================================== */
 
-const CACHE_VERSION = 'thkc-quiz-v1.0.0';
+const CACHE_VERSION = 'thkc-quiz-v1.1.0';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -52,7 +52,7 @@ const PRECACHE_ASSETS = [
   './js/ui/accordion.js',
   './js/ui/settings-modal.js',
 
-  // Data JSON
+  // Data JSON (6 môn)
   './data/subjects.json',
   './data/toan-truong.json',
   './data/toan-ngoai.json',
@@ -60,6 +60,9 @@ const PRECACHE_ASSETS = [
   './data/vatly-ngoai.json',
   './data/tinhoc-truong.json',
   './data/tinhoc-ngoai.json',
+  './data/hoahoc-truong.json',
+  './data/sinhhoc-truong.json',
+  './data/gdqp-truong.json',
 
   // Hình ảnh & Icons
   './images/sample.jpg',

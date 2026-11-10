@@ -2,16 +2,37 @@
   {
     "id": "toan",
     "name": "Toán học",
-    "icon": "📐"
+    "icon": "📐",
+    "sources": ["truong", "ngoai"]
   },
   {
     "id": "vatly",
     "name": "Vật lý",
-    "icon": "⚡"
+    "icon": "⚡",
+    "sources": ["truong", "ngoai"]
   },
   {
     "id": "tinhoc",
     "name": "Tin học",
-    "icon": "💻"
+    "icon": "💻",
+    "sources": ["truong", "ngoai"]
+  },
+  {
+    "id": "hoahoc",
+    "name": "Hóa học",
+    "icon": "🧪",
+    "sources": ["truong"]
+  },
+  {
+    "id": "sinhhoc",
+    "name": "Sinh học",
+    "icon": "🧬",
+    "sources": ["truong"]
+  },
+  {
+    "id": "gdqp",
+    "name": "Giáo dục Quốc phòng",
+    "icon": "🛡️",
+    "sources": ["truong"]
   }
 ]

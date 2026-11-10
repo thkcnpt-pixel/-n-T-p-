@@ -85,7 +85,10 @@ export function initQuizController({ confirm, toast } = {}) {
   // Màn hình Kết quả: 3 nút hành động + bộ lọc xem lại
   document.getElementById('btn-retry-wrong')?.addEventListener('click', () => retryWrongQuestions());
   document.getElementById('btn-retry-all')?.addEventListener('click', () => retryAllQuestions());
-  document.getElementById('btn-result-home')?.addEventListener('click', () => navigate('home'));
+  document.getElementById('btn-result-home')?.addEventListener('click', () => {
+    patchState('selection', { wizardStep: 1 });
+    navigate('home');
+  });
 
   const onlyWrongChk = /** @type {HTMLInputElement} */ (document.getElementById('review-only-wrong'));
   onlyWrongChk?.addEventListener('change', () => {

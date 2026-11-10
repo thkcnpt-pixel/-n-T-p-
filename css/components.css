@@ -1159,3 +1159,270 @@
 @keyframes toast-out {
   to { opacity: 0; transform: translateY(-12px); }
 }
+
+/* ==========================================================================
+   WIZARD 3 BƯỚC (TRANG CHỦ) & CHỌN PHẦN ÔN
+   ========================================================================== */
+
+/* Thanh chỉ báo bước 1 - 2 - 3 */
+.wizard-steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--c-bg-elevated);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+}
+
+.wizard-step {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--c-text-faint);
+  transition: color var(--dur-base);
+}
+
+.wizard-step__num {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--c-surface);
+  border: 1px solid var(--c-border-strong);
+  font-weight: var(--fw-bold);
+  color: var(--c-text-muted);
+  transition: background-color var(--dur-base), border-color var(--dur-base), color var(--dur-base);
+}
+
+.wizard-step.is-active {
+  color: var(--c-primary);
+  font-weight: var(--fw-semi);
+}
+
+.wizard-step.is-active .wizard-step__num {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: var(--c-text-invert);
+}
+
+.wizard-step.is-done {
+  color: var(--c-success);
+}
+
+.wizard-step.is-done .wizard-step__num {
+  background: var(--c-success-soft);
+  border-color: var(--c-success);
+  color: var(--c-success);
+}
+
+.wizard-step__line {
+  flex: 1;
+  height: 1px;
+  background: var(--c-border);
+}
+
+/* Khung từng bước Wizard */
+.wizard-pane {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  animation: slide-up var(--dur-base) var(--ease-out);
+}
+
+.wizard-Subhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  flex-wrap: wrap;
+}
+
+.subject-card__meta {
+  font-size: var(--fs-xs);
+  color: var(--c-text-muted);
+}
+
+.subject-card.is-selected {
+  border-color: var(--c-primary);
+  background: var(--c-primary-soft);
+}
+
+/* Bước 2: Thẻ chọn nguồn đề (Đề trường / Đề ngoài) */
+.source-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-3);
+}
+
+@media (min-width: 560px) {
+  .source-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.source-card {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-lg);
+  text-align: left;
+  transition: border-color var(--dur-fast), background-color var(--dur-fast), transform var(--dur-fast);
+}
+
+.source-card:hover:not(:disabled) {
+  background: var(--c-surface-hover);
+  border-color: var(--c-primary);
+}
+
+.source-card:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.source-card__icon {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  background: var(--c-bg-elevated);
+  font-size: 1.5rem;
+}
+
+.source-card__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.source-card__title {
+  font-size: var(--fs-base);
+  color: var(--c-text);
+}
+
+.source-card__arrow {
+  font-size: var(--fs-xl);
+  color: var(--c-text-muted);
+}
+
+/* Bước 3: Danh sách chọn phần ôn (Phần 1, Phần 2, Phần 3) */
+.part-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.part-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  user-select: none;
+  transition: border-color var(--dur-fast), background-color var(--dur-fast);
+}
+
+.part-card:hover {
+  background: var(--c-surface-hover);
+}
+
+.part-card input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.part-card__check {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-sm);
+  background: var(--c-bg-elevated);
+  border: 1px solid var(--c-border-strong);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  color: transparent;
+  transition: background-color var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast);
+}
+
+.part-card input:checked + .part-card__check {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: var(--c-text-invert);
+}
+
+.part-card:has(input:checked) {
+  border-color: var(--c-primary);
+  background: var(--c-primary-soft);
+}
+
+.part-card__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.part-card__body strong {
+  font-size: var(--fs-sm);
+  color: var(--c-text);
+}
+
+.part-summary {
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-md);
+  background: var(--c-surface);
+  border-left: 3px solid var(--c-primary);
+  font-size: var(--fs-sm);
+  color: var(--c-text);
+}
+
+/* Lưới tùy chỉnh nhanh ở Bước 3 */
+.inline-settings-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--sp-3);
+}
+
+@media (min-width: 560px) {
+  .inline-settings-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Nút CTA Bắt đầu làm bài thật nổi bật */
+.btn--cta {
+  min-height: 56px;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  letter-spacing: 0.02em;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--c-primary) 0%, #5c87eb 100%);
+  color: var(--c-text-invert);
+  box-shadow: 0 6px 20px rgba(122, 162, 247, 0.35);
+}
+
+.btn--cta:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--c-primary-hover) 0%, var(--c-primary) 100%);
+  box-shadow: 0 8px 24px rgba(122, 162, 247, 0.48);
+}
+

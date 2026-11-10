@@ -6,7 +6,7 @@
 
   <!-- ===================== SEO & BRANDING ===================== -->
   <title>Ôn Tập Trắc Nghiệm Đa Môn | Dev by Thkc</title>
-  <meta name="description" content="Web App ôn tập trắc nghiệm đa môn (Toán, Vật Lý, Tin học) – hỗ trợ offline, đồng bộ đám mây, công thức Toán học. Dev by Thkc." />
+  <meta name="description" content="Web App ôn tập trắc nghiệm đa môn (Toán, Vật Lý, Tin học, Hóa học, Sinh học, GDQP) – hỗ trợ offline, đồng bộ đám mây, công thức Toán học. Dev by Thkc." />
   <meta name="author" content="Thkc" />
   <meta name="generator" content="Dev by Thkc" />
   <meta name="robots" content="index, follow" />
@@ -110,7 +110,10 @@
     </section>
 
     <!-- =========================================================
-         SCREEN 2: TRANG CHỦ (chọn môn + chọn nguồn đề)
+         SCREEN 2: TRANG CHỦ — WIZARD 3 BƯỚC
+         - Bước 1: Chọn môn học (bấm 1 môn tự chuyển sang Bước 2 hoặc nhảy thẳng Bước 3)
+         - Bước 2: Chọn nguồn đề (chỉ "Đề trường" hoặc "Đề ngoài", có nút Quay lại)
+         - Bước 3: Cấu trúc & Tùy chỉnh + Chọn phần ôn + Nút Bắt đầu làm bài nổi bật
          ========================================================= -->
     <section id="screen-home" class="screen" data-screen="home" hidden>
       <header class="topbar">
@@ -126,58 +129,219 @@
       </header>
 
       <main class="container">
-        <!-- Bước 1: chọn môn -->
-        <section class="panel" aria-labelledby="h-subject">
-          <h2 id="h-subject" class="panel__title"><span class="step">1</span> Chọn môn học</h2>
-          <!-- Render động từ data/subjects.json -->
-          <div id="subject-list" class="subject-grid" role="radiogroup" aria-labelledby="h-subject">
-            <div class="skeleton skeleton--card"></div>
-            <div class="skeleton skeleton--card"></div>
-            <div class="skeleton skeleton--card"></div>
+        <!-- Thanh chỉ báo tiến trình Wizard 3 bước -->
+        <nav class="wizard-steps" aria-label="Các bước chuẩn bị bài thi">
+          <div class="wizard-step is-active" data-step-indicator="1">
+            <span class="wizard-step__num">1</span>
+            <span class="wizard-step__label">Chọn môn</span>
           </div>
-        </section>
-
-        <!-- Bước 2: chọn nguồn đề -->
-        <section class="panel" aria-labelledby="h-source">
-          <h2 id="h-source" class="panel__title"><span class="step">2</span> Chọn nguồn đề</h2>
-          <div class="segmented" role="radiogroup" aria-labelledby="h-source">
-            <label class="segmented__item">
-              <input type="radio" name="source" value="truong" checked />
-              <span>Đề trường</span>
-            </label>
-            <label class="segmented__item">
-              <input type="radio" name="source" value="ngoai" />
-              <span>Đề ngoài</span>
-            </label>
-            <label class="segmented__item">
-              <input type="radio" name="source" value="all" />
-              <span>Gộp cả hai</span>
-            </label>
+          <span class="wizard-step__line" aria-hidden="true"></span>
+          <div class="wizard-step" data-step-indicator="2">
+            <span class="wizard-step__num">2</span>
+            <span class="wizard-step__label">Nguồn đề</span>
           </div>
-          <p id="question-count-info" class="muted small" aria-live="polite">Hãy chọn một môn học.</p>
-        </section>
+          <span class="wizard-step__line" aria-hidden="true"></span>
+          <div class="wizard-step" data-step-indicator="3">
+            <span class="wizard-step__num">3</span>
+            <span class="wizard-step__label">Cấu trúc &amp; Ôn</span>
+          </div>
+        </nav>
 
-        <!-- Tóm tắt cài đặt hiện tại -->
-        <section class="panel panel--compact">
-          <div class="settings-summary">
-            <ul id="settings-summary" class="chip-list">
-              <!-- JS render: ⏱ 15 phút · 🔀 Xáo câu · 📜 Cuộn · 💡 Sau khi nộp -->
+        <!-- ==================== WIZARD BƯỚC 1: CHỌN MÔN HỌC ==================== -->
+        <div id="wizard-step-1" class="wizard-pane" data-wizard-step="1">
+          <section class="panel" aria-labelledby="h-subject">
+            <div class="panel__head">
+              <h2 id="h-subject" class="panel__title"><span class="step">1</span> Chọn môn học</h2>
+              <span class="muted small">Chạm vào môn để tiếp tục</span>
+            </div>
+            <!-- Render động từ data/subjects.json -->
+            <div id="subject-list" class="subject-grid" role="list" aria-labelledby="h-subject">
+              <div class="skeleton skeleton--card"></div>
+              <div class="skeleton skeleton--card"></div>
+              <div class="skeleton skeleton--card"></div>
+              <div class="skeleton skeleton--card"></div>
+              <div class="skeleton skeleton--card"></div>
+              <div class="skeleton skeleton--card"></div>
+            </div>
+          </section>
+
+          <!-- Lịch sử gần đây đặt ở màn 1 để dễ theo dõi -->
+          <section class="panel" aria-labelledby="h-history">
+            <h2 id="h-history" class="panel__title">Lịch sử gần đây</h2>
+            <ul id="history-list" class="history-list">
+              <li class="muted small">Chưa có lịch sử làm bài.</li>
             </ul>
-            <button type="button" class="btn btn--ghost btn--sm" data-action="open-settings">Tùy chỉnh</button>
+          </section>
+        </div>
+
+        <!-- ==================== WIZARD BƯỚC 2: CHỌN NGUỒN ĐỀ ==================== -->
+        <div id="wizard-step-2" class="wizard-pane" data-wizard-step="2" hidden>
+          <div class="wizard-Subhead">
+            <button type="button" id="btn-back-step-2" class="btn btn--ghost btn--sm">
+              ← Quay lại chọn môn
+            </button>
+            <span id="step2-subject-badge" class="badge badge--info"></span>
           </div>
-        </section>
 
-        <button type="button" id="btn-start" class="btn btn--primary btn--block btn--lg" disabled>
-          Bắt đầu làm bài
-        </button>
+          <section class="panel" aria-labelledby="h-source">
+            <h2 id="h-source" class="panel__title"><span class="step">2</span> Chọn nguồn đề</h2>
+            <p class="muted small">Chọn một nguồn đề bên dưới để chuyển sang cấu hình bài làm:</p>
 
-        <!-- Lịch sử gần đây -->
-        <section class="panel" aria-labelledby="h-history">
-          <h2 id="h-history" class="panel__title">Lịch sử gần đây</h2>
-          <ul id="history-list" class="history-list">
-            <li class="muted small">Chưa có lịch sử làm bài.</li>
-          </ul>
-        </section>
+            <!-- Tối đa 2 nút: Đề trường và Đề ngoài -->
+            <div id="source-card-list" class="source-grid">
+              <button type="button" class="source-card" data-source-btn="truong">
+                <span class="source-card__icon" aria-hidden="true">🏫</span>
+                <span class="source-card__info">
+                  <strong class="source-card__title">Đề trường</strong>
+                  <small id="source-count-truong" class="muted">Đề cương &amp; ngân hàng câu hỏi chính khóa</small>
+                </span>
+                <span class="source-card__arrow" aria-hidden="true">›</span>
+              </button>
+
+              <button type="button" class="source-card" data-source-btn="ngoai">
+                <span class="source-card__icon" aria-hidden="true">🌐</span>
+                <span class="source-card__info">
+                  <strong class="source-card__title">Đề ngoài</strong>
+                  <small id="source-count-ngoai" class="muted">Đề sưu tầm &amp; luyện tập mở rộng</small>
+                </span>
+                <span class="source-card__arrow" aria-hidden="true">›</span>
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <!-- ==================== WIZARD BƯỚC 3: CẤU TRÚC & TÙY CHỈNH ==================== -->
+        <div id="wizard-step-3" class="wizard-pane" data-wizard-step="3" hidden>
+          <div class="wizard-Subhead">
+            <button type="button" id="btn-back-step-3" class="btn btn--ghost btn--sm">
+              ← Quay lại
+            </button>
+            <div class="chip-list">
+              <span id="step3-subject-badge" class="badge badge--info"></span>
+              <span id="step3-source-badge" class="badge"></span>
+            </div>
+          </div>
+
+          <!-- Chọn phần ôn (Dạng câu hỏi) -->
+          <section class="panel" aria-labelledby="h-parts">
+            <div class="panel__head">
+              <h2 id="h-parts" class="panel__title"><span class="step">3</span> Chọn phần ôn (Dạng câu hỏi)</h2>
+              <button type="button" id="btn-select-all-parts" class="btn btn--ghost btn--sm">Chọn tất cả</button>
+            </div>
+            <p class="muted small">Tích chọn một hoặc nhiều phần bạn muốn luyện tập trong đề này:</p>
+
+            <div id="part-filter-list" class="part-list">
+              <label class="part-card">
+                <input type="checkbox" name="quizPart" value="1" checked />
+                <span class="part-card__check" aria-hidden="true">✓</span>
+                <span class="part-card__body">
+                  <strong>Phần 1: Trắc nghiệm nhiều lựa chọn</strong>
+                  <small class="muted">Câu hỏi 4 phương án A, B, C, D</small>
+                </span>
+                <span id="part-count-1" class="badge">0 câu</span>
+              </label>
+
+              <label class="part-card">
+                <input type="checkbox" name="quizPart" value="2" checked />
+                <span class="part-card__check" aria-hidden="true">✓</span>
+                <span class="part-card__body">
+                  <strong>Phần 2: Trắc nghiệm Đúng/Sai</strong>
+                  <small class="muted">Xác định mệnh đề Đúng hoặc Sai</small>
+                </span>
+                <span id="part-count-2" class="badge">0 câu</span>
+              </label>
+
+              <label class="part-card">
+                <input type="checkbox" name="quizPart" value="3" checked />
+                <span class="part-card__check" aria-hidden="true">✓</span>
+                <span class="part-card__body">
+                  <strong>Phần 3: Trắc nghiệm Trả lời ngắn</strong>
+                  <small class="muted">Điền kết quả / từ khóa ngắn gọn</small>
+                </span>
+                <span id="part-count-3" class="badge">0 câu</span>
+              </label>
+            </div>
+
+            <p id="question-count-info" class="part-summary" aria-live="polite">
+              Đang kiểm tra số lượng câu hỏi...
+            </p>
+          </section>
+
+          <!-- Cấu hình & Tùy chỉnh trực tiếp ngay tại Bước 3 -->
+          <section class="panel" aria-labelledby="h-inline-settings">
+            <div class="panel__head">
+              <h2 id="h-inline-settings" class="panel__title">⚙️ Tùy chỉnh làm bài</h2>
+              <button type="button" class="btn btn--ghost btn--sm" data-action="open-settings">Mở rộng</button>
+            </div>
+
+            <div class="form__group">
+              <label for="step3-time" class="form__label">
+                Thời gian làm bài: <strong><output id="step3-time-output" for="step3-time">15</output> phút</strong>
+              </label>
+              <input type="range" id="step3-time" min="0" max="120" step="5" value="15" class="range" />
+              <p class="form__hint">Kéo về 0 để làm bài không giới hạn thời gian.</p>
+            </div>
+
+            <div class="inline-settings-grid">
+              <div class="fieldset">
+                <span class="form__label">Chế độ hiển thị</span>
+                <div class="segmented">
+                  <label class="segmented__item">
+                    <input type="radio" name="step3ViewMode" value="scroll" checked />
+                    <span>Cuộn toàn bộ</span>
+                  </label>
+                  <label class="segmented__item">
+                    <input type="radio" name="step3ViewMode" value="single" />
+                    <span>Từng câu</span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="fieldset">
+                <span class="form__label">Xem lời giải</span>
+                <div class="segmented">
+                  <label class="segmented__item">
+                    <input type="radio" name="step3ExplainMode" value="instant" />
+                    <span>Ngay khi sai</span>
+                  </label>
+                  <label class="segmented__item">
+                    <input type="radio" name="step3ExplainMode" value="after" checked />
+                    <span>Sau khi nộp</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <label class="setting-row">
+              <span>
+                <strong>Xáo trộn câu hỏi</strong>
+                <small class="muted">Đổi thứ tự câu mỗi lần làm</small>
+              </span>
+              <span class="switch">
+                <input type="checkbox" id="step3-shuffle-q" role="switch" />
+                <span class="switch__track"><span class="switch__thumb"></span></span>
+              </span>
+            </label>
+
+            <label class="setting-row" style="border-bottom: none; padding-bottom: 0;">
+              <span>
+                <strong>Xáo trộn đáp án</strong>
+                <small class="muted">Giữ nguyên vị trí đáp án có "shuffle": false</small>
+              </span>
+              <span class="switch">
+                <input type="checkbox" id="step3-shuffle-o" role="switch" />
+                <span class="switch__track"><span class="switch__thumb"></span></span>
+              </span>
+            </label>
+
+            <ul id="settings-summary" class="chip-list" hidden></ul>
+          </section>
+
+          <!-- Nút Bắt đầu làm bài thật nổi bật ở cuối Màn hình 3 -->
+          <button type="button" id="btn-start" class="btn btn--primary btn--block btn--cta" disabled>
+            🚀 Bắt đầu làm bài ngay
+          </button>
+        </div>
       </main>
 
       <footer class="app-footer">Dev by Thkc</footer>
@@ -396,13 +560,13 @@
        TEMPLATES (renderer.js clone để dựng DOM)
        ========================================================= -->
 
-  <!-- Thẻ môn học -->
+  <!-- Thẻ môn học (Nút bấm chuyển thẳng sang bước tiếp theo) -->
   <template id="tpl-subject">
-    <label class="subject-card">
-      <input type="radio" name="subject" class="subject-card__input" />
+    <button type="button" class="subject-card" data-subject-id="">
       <span class="subject-card__icon" aria-hidden="true"></span>
       <span class="subject-card__name"></span>
-    </label>
+      <span class="subject-card__meta muted xsmall"></span>
+    </button>
   </template>
 
   <!-- Thẻ câu hỏi -->

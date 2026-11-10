@@ -7,7 +7,12 @@
      + Khi đăng nhập qua Form -> gọi Audit Log (`ipify` -> `login_logs`).
      + Khi có phiên đăng nhập -> tải song song cài đặt (`users/{uid}`),
        đẩy hàng đợi offline (`localStorage` -> Firestore), lên lịch `autoClean`
-       (> 365 ngày) và dựng Trang chủ (chọn môn + chọn nguồn đề).
+       (> 365 ngày) và dựng Trang chủ theo luồng **Wizard 3 bước**:
+       * Màn 1: Chọn môn (bấm 1 môn -> nếu môn có 2 nguồn thì sang Màn 2;
+         nếu môn chỉ có "Đề trường" như Hóa, Sinh, GDQP thì auto-skip nhảy thẳng sang Màn 3).
+       * Màn 2: Chọn nguồn đề ("Đề trường" hoặc "Đề ngoài" — đã xóa hoàn toàn "Gộp cả hai").
+       * Màn 3: Chọn phần ôn (Phần 1: MCQ, Phần 2: Đúng/Sai, Phần 3: Trả lời ngắn)
+         + Tùy chỉnh thời gian/chế độ xem + Nút CTA "Bắt đầu làm bài ngay".
    Dev by Thkc
    ========================================================================== */
 
@@ -42,6 +47,7 @@ import {
   loadSubjects,
   loadQuestions,
   countQuestions,
+  getQuestionBreakdown,
   getSubjectById,
 } from './services/data.service.js';
 
@@ -57,7 +63,7 @@ import {
 import { initSmartHeader, resetSmartHeader } from './ui/smart-header.js';
 import { initSwipeGesture } from './ui/swipe.js';
 import { initAccordion } from './ui/accordion.js';
-import { initSettingsModal } from './ui/settings-modal.js';
+import { initSettingsModal, syncStep3InlineSettingsUI } from './ui/settings-modal.js';
 
 /** Đánh dấu người dùng vừa bấm nút Đăng nhập (để chỉ ghi Audit Log đúng thời điểm này) */
 let explicitLoginPending = false;
@@ -81,7 +87,8 @@ function bootstrap() {
   onScreen('home', {
     enter: () => {
       refreshHomeHistory();
-      updateQuestionCountPreview();
+      const step = getState('selection').wizardStep || 1;
+      goToWizardStep(step);
     },
   });
 
@@ -102,7 +109,7 @@ function bootstrap() {
   });
 
   bindAuthEvents();
-  bindHomeEvents();
+  bindHomeWizardEvents();
   bindNetworkIndicators();
 
   // 3) Tải sẵn danh sách môn học (từ cache SW hoặc mạng)
@@ -158,6 +165,7 @@ async function handleAuthStateChange(fbUser) {
   // Tải cài đặt của user + cập nhật số bài chờ đồng bộ
   refreshPendingCount();
   await loadUserProfile(user);
+  syncStep3InlineSettingsUI();
 
   // Đảm bảo danh sách môn đã được dựng trên Trang chủ
   if (!getState('subjects').length) {
@@ -169,7 +177,8 @@ async function handleAuthStateChange(fbUser) {
     }
   }
 
-  // Chuyển vào Trang chủ
+  // Luôn bắt đầu ở Bước 1 của Wizard khi mới đăng nhập vào Trang chủ
+  patchState('selection', { wizardStep: 1 });
   if (!currentScreen() || currentScreen() === 'login') {
     await navigate('home', { replace: true, force: true });
   }
@@ -260,34 +269,72 @@ function bindAuthEvents() {
 }
 
 /* ==========================================================================
-   TRANG CHỦ: CHỌN MÔN, CHỌN NGUỒN ĐỀ & LỊCH SỬ
+   TRANG CHỦ: LUỒNG WIZARD 3 BƯỚC & CHỌN PHẦN ÔN
    ========================================================================== */
 
-function bindHomeEvents() {
-  // Chọn nguồn đề: truong | ngoai | all
-  document.querySelectorAll('input[name="source"]').forEach((radio) => {
-    radio.addEventListener('change', (e) => {
-      const val = /** @type {HTMLInputElement} */ (e.target).value;
-      patchState('selection', { source: val });
-      updateQuestionCountPreview();
+function bindHomeWizardEvents() {
+  // Nút Quay lại ở Màn hình 2 -> lùi về Màn hình 1
+  document.getElementById('btn-back-step-2')?.addEventListener('click', () => {
+    goToWizardStep(1);
+  });
+
+  // Nút Quay lại ở Màn hình 3:
+  // Nếu môn đang chọn chỉ có 1 nguồn ("Đề trường" -> đã auto-skip Màn 2), lùi thẳng về Màn 1.
+  // Ngược lại (Toán, Lý, Tin có 2 nguồn), lùi về Màn 2.
+  document.getElementById('btn-back-step-3')?.addEventListener('click', () => {
+    const subj = getSubjectById(getState('selection').subjectId);
+    const hasMultipleSources = subj && Array.isArray(subj.sources) && subj.sources.length > 1;
+    goToWizardStep(hasMultipleSources ? 2 : 1);
+  });
+
+  // Màn hình 2: Bấm vào 1 nút nguồn đề ("Đề trường" hoặc "Đề ngoài") -> tự chuyển sang Màn hình 3
+  document.querySelectorAll('[data-source-btn]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const src = /** @type {HTMLElement} */ (btn).dataset.sourceBtn;
+      const validSource = src === SOURCES.NGOAI ? SOURCES.NGOAI : SOURCES.TRUONG;
+      patchState('selection', { source: validSource });
+      goToWizardStep(3);
     });
   });
 
-  // Nút Bắt đầu làm bài
+  // Màn hình 3: Checkbox chọn Phần ôn (Phần 1, Phần 2, Phần 3)
+  document.querySelectorAll('input[name="quizPart"]').forEach((chk) => {
+    chk.addEventListener('change', () => {
+      syncSelectedPartsFromDOM();
+      updateStep3BreakdownAndPreview();
+    });
+  });
+
+  // Nút "Chọn tất cả" các phần ôn ở Màn hình 3
+  document.getElementById('btn-select-all-parts')?.addEventListener('click', () => {
+    document.querySelectorAll('input[name="quizPart"]').forEach((chk) => {
+      /** @type {HTMLInputElement} */ (chk).checked = true;
+    });
+    syncSelectedPartsFromDOM();
+    updateStep3BreakdownAndPreview();
+  });
+
+  // Nút CTA "Bắt đầu làm bài ngay" ở cuối Màn hình 3
   const startBtn = /** @type {HTMLButtonElement} */ (document.getElementById('btn-start'));
   startBtn?.addEventListener('click', async () => {
-    const { subjectId, source } = getState('selection');
+    const { subjectId, source, parts } = getState('selection');
     const subject = getSubjectById(subjectId);
     if (!subject) {
       showToast('Vui lòng chọn một môn học.', 'warning');
+      goToWizardStep(1);
+      return;
+    }
+
+    if (!parts || parts.length === 0) {
+      showToast('Vui lòng chọn ít nhất 1 phần ôn tập.', 'warning');
       return;
     }
 
     startBtn.disabled = true;
     try {
-      const questions = await loadQuestions(subjectId, source);
+      const questions = await loadQuestions(subjectId, source, parts);
       if (!questions.length) {
-        showToast('Nguồn đề này hiện chưa có câu hỏi nào.', 'warning');
+        showToast('Không có câu hỏi nào khớp với phần ôn bạn đã chọn.', 'warning');
         return;
       }
       await startQuiz({
@@ -301,11 +348,28 @@ function bindHomeEvents() {
       console.error('[app] Lỗi tải đề:', err);
       showToast('Không tải được bộ câu hỏi. Vui lòng kiểm tra kết nối.', 'error');
     } finally {
-      updateQuestionCountPreview();
+      updateStep3BreakdownAndPreview();
     }
   });
 }
 
+function syncSelectedPartsFromDOM() {
+  const selected = [];
+  document.querySelectorAll('input[name="quizPart"]').forEach((el) => {
+    const input = /** @type {HTMLInputElement} */ (el);
+    if (input.checked) selected.push(Number(input.value));
+  });
+  patchState('selection', { parts: selected });
+}
+
+/**
+ * Render danh sách 6 môn học ở Màn hình 1 của Wizard.
+ * Khi bấm vào 1 môn:
+ * - Nếu môn có cả "Đề trường" và "Đề ngoài" (Toán, Vật lý, Tin học) -> chuyển sang Màn hình 2.
+ * - Nếu môn chỉ có "Đề trường" (Hóa học, Sinh học, GDQP) -> auto-skip Màn hình 2,
+ *   tự gán `source: 'truong'` và nhảy thẳng sang Màn hình 3!
+ * @param {Array<{id: string, name: string, icon: string, sources: string[]}>} subjects
+ */
 function renderSubjectCards(subjects) {
   const wrap = document.getElementById('subject-list');
   const tpl = /** @type {HTMLTemplateElement} */ (document.getElementById('tpl-subject'));
@@ -313,41 +377,153 @@ function renderSubjectCards(subjects) {
 
   wrap.innerHTML = '';
   const frag = document.createDocumentFragment();
-  const currentSubjectId = getState('selection').subjectId || subjects[0]?.id || null;
 
   subjects.forEach((subj) => {
-    const card = /** @type {HTMLElement} */ (tpl.content.firstElementChild.cloneNode(true));
-    const input = /** @type {HTMLInputElement} */ (card.querySelector('.subject-card__input'));
+    const card = /** @type {HTMLButtonElement} */ (tpl.content.firstElementChild.cloneNode(true));
     const iconEl = card.querySelector('.subject-card__icon');
     const nameEl = card.querySelector('.subject-card__name');
+    const metaEl = card.querySelector('.subject-card__meta');
 
-    input.value = subj.id;
-    input.checked = subj.id === currentSubjectId;
+    card.dataset.subjectId = subj.id;
     iconEl.textContent = subj.icon;
     nameEl.textContent = subj.name;
+    if (metaEl) {
+      metaEl.textContent = subj.sources.length > 1 ? 'Đề trường · Đề ngoài' : 'Đề trường';
+    }
 
-    input.addEventListener('change', () => {
-      if (input.checked) {
-        patchState('selection', { subjectId: subj.id });
-        updateQuestionCountPreview();
-      }
+    card.addEventListener('click', () => {
+      handleSubjectPick(subj);
     });
 
     frag.appendChild(card);
   });
 
   wrap.appendChild(frag);
+}
 
-  if (currentSubjectId) {
-    patchState('selection', { subjectId: currentSubjectId });
-    updateQuestionCountPreview();
+/**
+ * Xử lý khi học sinh bấm chọn 1 môn ở Màn hình 1.
+ * @param {{id: string, name: string, icon: string, sources: string[]}} subj
+ */
+function handleSubjectPick(subj) {
+  // Đánh dấu thẻ môn đang chọn
+  document.querySelectorAll('.subject-card').forEach((el) => {
+    el.classList.toggle('is-selected', /** @type {HTMLElement} */ (el).dataset.subjectId === subj.id);
+  });
+
+  const hasMultipleSources = Array.isArray(subj.sources) && subj.sources.length > 1;
+  if (hasMultipleSources) {
+    // Toán, Vật lý, Tin học -> sang Màn hình 2 để chọn "Đề trường" hoặc "Đề ngoài"
+    patchState('selection', { subjectId: subj.id });
+    goToWizardStep(2);
+  } else {
+    // Hóa học, Sinh học, GDQP -> chỉ có "Đề trường", auto-skip Màn hình 2 nhảy thẳng sang Màn hình 3
+    patchState('selection', { subjectId: subj.id, source: SOURCES.TRUONG });
+    goToWizardStep(3);
   }
 }
 
-async function updateQuestionCountPreview() {
+/**
+ * Chuyển đổi mượt mà giữa 3 màn hình con trong Wizard Trang chủ (không tải lại trang).
+ * @param {1|2|3} step
+ */
+export function goToWizardStep(step) {
+  const selection = getState('selection');
+  const subject = getSubjectById(selection.subjectId);
+
+  // Nếu chưa chọn môn mà đòi vào bước 2 hoặc 3 -> đưa về bước 1
+  const targetStep = !subject && step > 1 ? 1 : step;
+  patchState('selection', { wizardStep: targetStep });
+
+  // Ẩn/hiện 3 khung wizard-pane
+  for (let i = 1; i <= 3; i += 1) {
+    const pane = document.getElementById(`wizard-step-${i}`);
+    if (pane) pane.hidden = i !== targetStep;
+  }
+
+  // Cập nhật thanh chỉ báo tiến trình Wizard (1 - 2 - 3)
+  document.querySelectorAll('[data-step-indicator]').forEach((el) => {
+    const s = Number(/** @type {HTMLElement} */ (el).dataset.stepIndicator);
+    el.classList.toggle('is-active', s === targetStep);
+    el.classList.toggle('is-done', s < targetStep);
+  });
+
+  if (targetStep === 2 && subject) {
+    populateStep2Sources(subject);
+  } else if (targetStep === 3 && subject) {
+    populateStep3Config(subject);
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/**
+ * Cập nhật giao diện Màn hình 2 (Chọn nguồn đề: chỉ Đề trường / Đề ngoài).
+ * @param {{id: string, name: string, icon: string, sources: string[]}} subject
+ */
+async function populateStep2Sources(subject) {
+  const badgeEl = document.getElementById('step2-subject-badge');
+  if (badgeEl) badgeEl.textContent = `${subject.icon} ${subject.name}`;
+
+  // Ẩn/hiện nút nguồn đề tùy theo cấu hình môn học
+  document.querySelectorAll('[data-source-btn]').forEach((btn) => {
+    const src = /** @type {HTMLElement} */ (btn).dataset.sourceBtn;
+    /** @type {HTMLElement} */ (btn).hidden = !subject.sources.includes(src);
+  });
+
+  // Hiển thị số câu hỏi của từng nguồn đề
+  const truongInfo = document.getElementById('source-count-truong');
+  const ngoaiInfo = document.getElementById('source-count-ngoai');
+
+  const [cTruong, cNgoai] = await Promise.all([
+    countQuestions(subject.id, SOURCES.TRUONG),
+    subject.sources.includes(SOURCES.NGOAI)
+      ? countQuestions(subject.id, SOURCES.NGOAI)
+      : Promise.resolve(null),
+  ]);
+
+  if (truongInfo) {
+    truongInfo.textContent = cTruong !== null
+      ? `Đề cương chính khóa · Hiện có ${cTruong} câu`
+      : 'Đề cương & ngân hàng câu hỏi chính khóa';
+  }
+  if (ngoaiInfo) {
+    ngoaiInfo.textContent = cNgoai !== null
+      ? (cNgoai > 0 ? `Đề mở rộng · Hiện có ${cNgoai} câu` : 'Đề mở rộng · Chưa có câu hỏi (0 câu)')
+      : 'Đề sưu tầm & luyện tập mở rộng';
+  }
+}
+
+/**
+ * Cập nhật giao diện Màn hình 3 (Chọn phần ôn + Tùy chỉnh + Nút Bắt đầu làm bài).
+ * @param {{id: string, name: string, icon: string, sources: string[]}} subject
+ */
+async function populateStep3Config(subject) {
+  const { source } = getState('selection');
+  const subjBadge = document.getElementById('step3-subject-badge');
+  const srcBadge = document.getElementById('step3-source-badge');
+  const backBtn = document.getElementById('btn-back-step-3');
+
+  if (subjBadge) subjBadge.textContent = `${subject.icon} ${subject.name}`;
+  if (srcBadge) srcBadge.textContent = SOURCE_LABELS[source] || 'Đề trường';
+  if (backBtn) {
+    backBtn.textContent = subject.sources.length > 1
+      ? '← Quay lại chọn nguồn đề'
+      : '← Quay lại chọn môn';
+  }
+
+  syncStep3InlineSettingsUI();
+  await updateStep3BreakdownAndPreview();
+}
+
+/**
+ * Tính toán số câu hỏi của từng Phần (Phần 1, Phần 2, Phần 3) và tổng số câu
+ * sẽ có trong đề dựa trên các Checkbox phần ôn đang được tích chọn.
+ */
+async function updateStep3BreakdownAndPreview() {
   const infoEl = document.getElementById('question-count-info');
   const startBtn = /** @type {HTMLButtonElement} */ (document.getElementById('btn-start'));
-  const { subjectId, source } = getState('selection');
+  const { subjectId, source, parts } = getState('selection');
   const subject = getSubjectById(subjectId);
 
   if (!subject) {
@@ -356,21 +532,46 @@ async function updateQuestionCountPreview() {
     return;
   }
 
-  const count = await countQuestions(subjectId, source);
-  const srcLabel = SOURCE_LABELS[source] || source;
+  const breakdown = await getQuestionBreakdown(subjectId, source);
+  const srcLabel = SOURCE_LABELS[source] || 'Đề trường';
 
-  if (count === null) {
+  if (!breakdown) {
     if (infoEl) infoEl.textContent = `Không đọc được dữ liệu ${subject.name} (${srcLabel}).`;
     if (startBtn) startBtn.disabled = true;
-  } else if (count === 0) {
+    return;
+  }
+
+  // Cập nhật badge số câu trên từng dòng Phần 1, Phần 2, Phần 3
+  for (const p of [1, 2, 3]) {
+    const badge = document.getElementById(`part-count-${p}`);
+    if (badge) badge.textContent = `${breakdown.byPart[p] || 0} câu`;
+  }
+
+  if (breakdown.total === 0) {
     if (infoEl) {
-      infoEl.textContent = source === SOURCES.NGOAI
-        ? `${subject.name} · ${srcLabel}: Chưa có câu hỏi (file dự phòng trống). Hãy chọn "Đề trường" hoặc "Gộp cả hai".`
-        : `${subject.name} · ${srcLabel}: Hiện có 0 câu hỏi.`;
+      infoEl.textContent = `${subject.name} · ${srcLabel}: Nguồn đề này hiện chưa có câu hỏi nào (0 câu). Bạn có thể quay lại chọn "Đề trường".`;
     }
     if (startBtn) startBtn.disabled = true;
+    return;
+  }
+
+  // Đếm tổng số câu thuộc các phần được chọn
+  const selectedParts = Array.isArray(parts) ? parts : [];
+  if (selectedParts.length === 0) {
+    if (infoEl) infoEl.textContent = 'Vui lòng tích chọn ít nhất 1 phần ôn tập ở trên.';
+    if (startBtn) startBtn.disabled = true;
+    return;
+  }
+
+  const matchedCount = selectedParts.reduce((sum, p) => sum + (breakdown.byPart[p] || 0), 0);
+
+  if (matchedCount === 0) {
+    if (infoEl) infoEl.textContent = 'Các phần bạn chọn hiện chưa có câu hỏi nào.';
+    if (startBtn) startBtn.disabled = true;
   } else {
-    if (infoEl) infoEl.textContent = `Sẵn sàng: ${count} câu hỏi (${subject.name} · ${srcLabel}).`;
+    if (infoEl) {
+      infoEl.textContent = `Sẵn sàng: ${matchedCount} câu hỏi (${subject.name} · ${srcLabel} · Phần ${selectedParts.join(', ')}).`;
+    }
     if (startBtn) startBtn.disabled = false;
   }
 }

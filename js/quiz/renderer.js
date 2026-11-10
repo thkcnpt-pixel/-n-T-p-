@@ -7,9 +7,9 @@
 import { gradeQuestion, isAnswered } from './grader.js';
 
 const TYPE_BADGES = {
-  mcq: 'Trắc nghiệm',
-  truefalse: 'Đúng / Sai',
-  short: 'Trả lời ngắn',
+  mcq: 'Phần 1 · Trắc nghiệm',
+  truefalse: 'Phần 2 · Đúng / Sai',
+  short: 'Phần 3 · Trả lời ngắn',
 };
 
 /* --------------------------------------------------------------------------

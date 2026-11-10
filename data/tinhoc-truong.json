@@ -1,6 +1,7 @@
 [
   {
     "id": "tinhoc-1",
+    "part": 1,
     "type": "mcq",
     "question": "Trong ngôn ngữ lập trình JavaScript (ES6+), từ khóa nào dùng để khai báo biến có phạm vi khối (block scope)?",
     "options": [
@@ -14,6 +15,7 @@
   },
   {
     "id": "tinhoc-2",
+    "part": 2,
     "type": "truefalse",
     "question": "Giao thức HTTPS sử dụng TLS/SSL để mã hóa dữ liệu truyền giữa trình duyệt và máy chủ web.",
     "answer": true,
@@ -21,6 +23,7 @@
   },
   {
     "id": "tinhoc-3",
+    "part": 3,
     "type": "short",
     "question": "Cấu trúc dữ liệu hoạt động theo nguyên tắc \"Vào sau, Ra trước\" (Last In, First Out) viết tắt tiếng Anh gồm 4 chữ cái là gì?",
     "answer": ["lifo", "stack", "ngăn xếp"],

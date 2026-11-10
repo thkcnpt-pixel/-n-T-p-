@@ -1,12 +1,15 @@
 /* ==========================================================================
    js/services/data.service.js — Tải & chuẩn hóa dữ liệu câu hỏi (JSON tĩnh)
    File: data/subjects.json, data/{subjectId}-truong.json, data/{subjectId}-ngoai.json
+   (Đã loại bỏ hoàn toàn logic gộp đề "all" theo thiết kế mới).
 
    SCHEMA CÂU HỎI (trong file JSON):
-   - Trắc nghiệm:  { "id", "type": "mcq", "question", "options": ["A", {"text": "Cả A và B", "shuffle": false}],
-                     "answer": 0 (index từ 0, hoặc "A".."Z"), "explanation", "image"?, "shuffle"? }
-   - Đúng/Sai:     { "id", "type": "truefalse", "question", "answer": true | false, "explanation" }
-   - Trả lời ngắn: { "id", "type": "short", "question", "answer": "đáp án" | ["đáp án 1", "đáp án 2"], "explanation" }
+   - Phần 1 - Trắc nghiệm nhiều lựa chọn (`part: 1`, `type: "mcq"`):
+     { "id", "part": 1, "type": "mcq", "question", "options": [...], "answer": 0..3, "explanation", "image"?, "shuffle"? }
+   - Phần 2 - Trắc nghiệm Đúng/Sai (`part: 2`, `type: "truefalse"`):
+     { "id", "part": 2, "type": "truefalse", "question", "answer": true | false, "explanation" }
+   - Phần 3 - Trắc nghiệm Trả lời ngắn (`part: 3`, `type: "short"`):
+     { "id", "part": 3, "type": "short", "question", "answer": "đáp án" | ["đáp án 1", "đáp án 2"], "explanation" }
    Dev by Thkc
    ========================================================================== */
 
@@ -18,6 +21,12 @@ const TYPE_ALIASES = {
   mcq: 'mcq', multiple_choice: 'mcq', choice: 'mcq',
   truefalse: 'truefalse', true_false: 'truefalse', tf: 'truefalse',
   short: 'short', short_answer: 'short', fill: 'short', fill_blank: 'short',
+};
+
+const TYPE_TO_PART = {
+  mcq: 1,
+  truefalse: 2,
+  short: 3,
 };
 
 /** Cache theo file: "toan-truong" -> Question[] đã chuẩn hóa */
@@ -34,6 +43,7 @@ const fileCache = new Map();
  * @typedef {Object} Question
  * @property {string} key          Định danh duy nhất toàn app: "{subject}:{source}:{id}"
  * @property {string} id
+ * @property {1|2|3}  part         Phần ôn: 1 (MCQ), 2 (Đúng/Sai), 3 (Trả lời ngắn)
  * @property {'mcq'|'truefalse'|'short'} type
  * @property {string} subjectId
  * @property {'truong'|'ngoai'} source
@@ -61,12 +71,12 @@ async function fetchJson(url) {
 }
 
 /* --------------------------------------------------------------------------
-   Môn học
+   Môn học & Cấu hình Nguồn đề theo môn
    -------------------------------------------------------------------------- */
 
 /**
- * Tải danh sách môn vào state.subjects.
- * @returns {Promise<Array<{id: string, name: string, icon: string}>>}
+ * Tải danh sách môn vào state.subjects (bao gồm mảng `sources` hợp lệ của từng môn).
+ * @returns {Promise<Array<{id: string, name: string, icon: string, sources: string[]}>>}
  */
 export async function loadSubjects() {
   const raw = await fetchJson(`${DATA_DIR}subjects.json`);
@@ -74,7 +84,17 @@ export async function loadSubjects() {
 
   const subjects = raw
     .filter((s) => s && /^[a-z0-9-]+$/.test(s.id) && typeof s.name === 'string')
-    .map((s) => ({ id: s.id, name: s.name.trim(), icon: s.icon || '📘' }));
+    .map((s) => {
+      const validSources = Array.isArray(s.sources)
+        ? s.sources.filter((src) => src === SOURCES.TRUONG || src === SOURCES.NGOAI)
+        : [SOURCES.TRUONG];
+      return {
+        id: s.id,
+        name: s.name.trim(),
+        icon: s.icon || '📘',
+        sources: validSources.length ? validSources : [SOURCES.TRUONG],
+      };
+    });
 
   setState('subjects', subjects);
   return subjects;
@@ -86,37 +106,78 @@ export function getSubjectById(id) {
 }
 
 /* --------------------------------------------------------------------------
-   Câu hỏi
+   Câu hỏi & Lọc theo Phần ôn (Part 1, 2, 3)
    -------------------------------------------------------------------------- */
 
 /**
- * Tải câu hỏi theo môn + nguồn. 'all' gộp cả 2 file; 1 file lỗi vẫn dùng file còn lại.
+ * Tải câu hỏi theo môn + nguồn đơn lẻ ('truong' hoặc 'ngoai'),
+ * sau đó lọc theo danh sách `parts` (nếu có truyền).
  * Trả về BẢN SAO để việc xáo trộn không làm hỏng cache.
  * @param {string} subjectId
- * @param {'truong'|'ngoai'|'all'} source
+ * @param {'truong'|'ngoai'} source
+ * @param {number[]} [parts]  Mảng các phần cần lọc (VD: [1, 2, 3]). Nếu không truyền -> lấy hết.
  * @returns {Promise<Question[]>}
  */
-export async function loadQuestions(subjectId, source) {
-  const sources = source === SOURCES.ALL ? [SOURCES.TRUONG, SOURCES.NGOAI] : [source];
-  const results = await Promise.allSettled(sources.map((src) => loadFile(subjectId, src)));
-
-  const questions = [];
-  const errors = [];
-  results.forEach((r) => (r.status === 'fulfilled' ? questions.push(...r.value) : errors.push(r.reason)));
-
-  if (errors.length === results.length) throw errors[0];
-  if (errors.length) console.warn('[data] Một số nguồn tải lỗi:', errors);
-
-  return structuredClone(questions);
+export async function loadQuestions(subjectId, source, parts) {
+  const cleanSource = source === SOURCES.NGOAI ? SOURCES.NGOAI : SOURCES.TRUONG;
+  const allQuestions = await loadFile(subjectId, cleanSource);
+  const filtered = filterQuestionsByParts(allQuestions, parts);
+  return structuredClone(filtered);
 }
 
 /**
- * Đếm số câu (dùng hiển thị trên trang chủ). Không throw.
- * @returns {Promise<number|null>} null nếu tải lỗi
+ * Lọc danh sách câu hỏi theo các phần ôn (1: MCQ, 2: Đúng/Sai, 3: Trả lời ngắn).
+ * Hỗ trợ đối chiếu cả trường `q.part` lẫn `q.type`.
+ * @param {Question[]} questions
+ * @param {number[]} [parts]
+ * @returns {Question[]}
  */
-export async function countQuestions(subjectId, source) {
+export function filterQuestionsByParts(questions, parts) {
+  if (!Array.isArray(questions)) return [];
+  if (!Array.isArray(parts)) return questions;
+
+  const partSet = new Set(parts.map((p) => Number(p)));
+  if (partSet.size === 0) return [];
+
+  return questions.filter((q) => {
+    const qPart = Number(q.part) || TYPE_TO_PART[q.type] || 1;
+    return partSet.has(qPart);
+  });
+}
+
+/**
+ * Thống kê số lượng câu hỏi theo từng phần (Phần 1, 2, 3) cho 1 môn + nguồn đề.
+ * Không throw — trả về null nếu file lỗi.
+ * @param {string} subjectId
+ * @param {'truong'|'ngoai'} source
+ * @returns {Promise<{total: number, byPart: {1: number, 2: number, 3: number}}|null>}
+ */
+export async function getQuestionBreakdown(subjectId, source) {
   try {
-    return (await loadQuestions(subjectId, source)).length;
+    const cleanSource = source === SOURCES.NGOAI ? SOURCES.NGOAI : SOURCES.TRUONG;
+    const list = await loadFile(subjectId, cleanSource);
+    const byPart = { 1: 0, 2: 0, 3: 0 };
+    list.forEach((q) => {
+      const p = Number(q.part) || TYPE_TO_PART[q.type] || 1;
+      if (p === 1 || p === 2 || p === 3) byPart[p] += 1;
+    });
+    return { total: list.length, byPart };
+  } catch (err) {
+    console.warn('[data] Thống kê câu hỏi lỗi:', err);
+    return null;
+  }
+}
+
+/**
+ * Đếm số câu theo môn + nguồn + các phần đã chọn. Không throw.
+ * @param {string} subjectId
+ * @param {'truong'|'ngoai'} source
+ * @param {number[]} [parts]
+ * @returns {Promise<number|null>}
+ */
+export async function countQuestions(subjectId, source, parts) {
+  try {
+    return (await loadQuestions(subjectId, source, parts)).length;
   } catch (err) {
     console.warn('[data] Đếm câu hỏi lỗi:', err);
     return null;
@@ -175,10 +236,13 @@ function normalizeQuestion(raw, ctx) {
   if (!question) return warn('thiếu nội dung "question"');
 
   const id = String(raw.id ?? ctx.index + 1);
+  const rawPart = Number(raw.part);
+  const part = rawPart === 1 || rawPart === 2 || rawPart === 3 ? rawPart : TYPE_TO_PART[type];
 
   const base = {
     key: `${ctx.subjectId}:${ctx.source}:${id}`,
     id,
+    part,
     type,
     subjectId: ctx.subjectId,
     source: ctx.source,
@@ -188,7 +252,7 @@ function normalizeQuestion(raw, ctx) {
     shuffle: raw.shuffle !== false,
   };
 
-  /* ---- Trắc nghiệm ---- */
+  /* ---- Phần 1: Trắc nghiệm nhiều lựa chọn ---- */
   if (type === 'mcq') {
     if (!Array.isArray(raw.options) || raw.options.length < 2) return warn('cần ít nhất 2 "options"');
 
@@ -209,7 +273,7 @@ function normalizeQuestion(raw, ctx) {
     return { ...base, options, answer };
   }
 
-  /* ---- Đúng / Sai ---- */
+  /* ---- Phần 2: Trắc nghiệm Đúng / Sai ---- */
   if (type === 'truefalse') {
     const v = typeof raw.answer === 'string' ? raw.answer.trim().toLowerCase() : raw.answer;
     let isTrue;
@@ -227,7 +291,7 @@ function normalizeQuestion(raw, ctx) {
     };
   }
 
-  /* ---- Trả lời ngắn ---- */
+  /* ---- Phần 3: Trắc nghiệm Trả lời ngắn ---- */
   const answers = (Array.isArray(raw.answer) ? raw.answer : [raw.answer])
     .filter((a) => typeof a === 'string' || typeof a === 'number')
     .map((a) => String(a).trim())
