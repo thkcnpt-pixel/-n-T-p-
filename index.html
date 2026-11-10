@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- ===================== SEO & BRANDING ===================== -->
+  <title>Ôn Tập Trắc Nghiệm Đa Môn | Dev by Thkc</title>
+  <meta name="description" content="Web App ôn tập trắc nghiệm đa môn (Toán, Vật Lý, Tin học) – hỗ trợ offline, đồng bộ đám mây, công thức Toán học. Dev by Thkc." />
+  <meta name="author" content="Thkc" />
+  <meta name="generator" content="Dev by Thkc" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph (Facebook, Zalo, Messenger...) -->
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="vi_VN" />
+  <meta property="og:site_name" content="Ôn Tập Trắc Nghiệm | Dev by Thkc" />
+  <meta property="og:title" content="Ôn Tập Trắc Nghiệm Đa Môn | Dev by Thkc" />
+  <meta property="og:description" content="Luyện đề trắc nghiệm mọi lúc mọi nơi, kể cả khi offline. Dev by Thkc." />
+  <meta property="og:image" content="icons/icon-512.png" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Ôn Tập Trắc Nghiệm Đa Môn | Dev by Thkc" />
+  <meta name="twitter:description" content="Luyện đề trắc nghiệm mọi lúc mọi nơi, kể cả khi offline. Dev by Thkc." />
+
+  <!-- ===================== PWA ===================== -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1e1f24" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Ôn Tập" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+  <!-- ===================== KaTeX (CDN) ===================== -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" crossorigin="anonymous" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" crossorigin="anonymous"></script>
+
+  <!-- ===================== STYLES ===================== -->
+  <link rel="stylesheet" href="css/variables.css" />
+  <link rel="stylesheet" href="css/base.css" />
+  <link rel="stylesheet" href="css/layout.css" />
+  <link rel="stylesheet" href="css/components.css" />
+</head>
+
+<body>
+  <noscript>
+    <div class="noscript">Ứng dụng cần bật JavaScript để hoạt động.</div>
+  </noscript>
+
+  <!-- Thanh trạng thái mạng (hiện khi offline / khi đang đồng bộ) -->
+  <div id="net-status" class="net-status" role="status" aria-live="polite" hidden>
+    <span class="net-status__dot"></span>
+    <span id="net-status-text">Bạn đang offline</span>
+  </div>
+
+  <!-- Màn hình chờ khởi động -->
+  <div id="app-loader" class="app-loader" aria-hidden="false">
+    <div class="spinner" aria-hidden="true"></div>
+    <p>Đang khởi động...</p>
+  </div>
+
+  <div id="app" class="app">
+
+    <!-- =========================================================
+         SCREEN 1: ĐĂNG NHẬP (không có Đăng ký - tài khoản do Admin cấp)
+         ========================================================= -->
+    <section id="screen-login" class="screen screen--center" data-screen="login" hidden>
+      <div class="auth-card">
+        <div class="auth-card__brand">
+          <img src="icons/icon-192.png" alt="" width="64" height="64" class="auth-card__logo" />
+          <h1 class="auth-card__title">Ôn Tập Trắc Nghiệm</h1>
+          <p class="auth-card__subtitle">Đăng nhập bằng tài khoản được cấp</p>
+        </div>
+
+        <form id="login-form" class="form" novalidate autocomplete="on">
+          <div class="form__group">
+            <label for="login-email" class="form__label">Email</label>
+            <input id="login-email" name="email" type="email" class="input"
+                   placeholder="hocsinh@example.com" autocomplete="username" inputmode="email" required />
+          </div>
+
+          <div class="form__group">
+            <label for="login-password" class="form__label">Mật khẩu</label>
+            <div class="input-wrap">
+              <input id="login-password" name="password" type="password" class="input"
+                     placeholder="••••••••" autocomplete="current-password" minlength="6" required />
+              <button type="button" id="btn-toggle-password" class="input-wrap__action"
+                      aria-label="Hiện mật khẩu" aria-pressed="false">👁</button>
+            </div>
+          </div>
+
+          <p id="login-error" class="form__error" role="alert" hidden></p>
+
+          <button type="submit" id="btn-login" class="btn btn--primary btn--block">
+            <span class="btn__text">Đăng nhập</span>
+            <span class="btn__spinner" aria-hidden="true"></span>
+          </button>
+
+          <p class="form__hint">Chưa có tài khoản? Vui lòng liên hệ quản trị viên để được cấp.</p>
+        </form>
+      </div>
+
+      <footer class="app-footer">Dev by Thkc</footer>
+    </section>
+
+    <!-- =========================================================
+         SCREEN 2: TRANG CHỦ (chọn môn + chọn nguồn đề)
+         ========================================================= -->
+    <section id="screen-home" class="screen" data-screen="home" hidden>
+      <header class="topbar">
+        <div class="topbar__info">
+          <span class="topbar__greet">Xin chào,</span>
+          <strong id="user-email" class="topbar__user">...</strong>
+        </div>
+        <div class="topbar__actions">
+          <span id="pending-badge" class="badge badge--warn" title="Bài làm chờ đồng bộ" hidden>0</span>
+          <button type="button" class="icon-btn" data-action="open-settings" aria-label="Cài đặt">⚙️</button>
+          <button type="button" id="btn-logout" class="icon-btn" aria-label="Đăng xuất">⏻</button>
+        </div>
+      </header>
+
+      <main class="container">
+        <!-- Bước 1: chọn môn -->
+        <section class="panel" aria-labelledby="h-subject">
+          <h2 id="h-subject" class="panel__title"><span class="step">1</span> Chọn môn học</h2>
+          <!-- Render động từ data/subjects.json -->
+          <div id="subject-list" class="subject-grid" role="radiogroup" aria-labelledby="h-subject">
+            <div class="skeleton skeleton--card"></div>
+            <div class="skeleton skeleton--card"></div>
+            <div class="skeleton skeleton--card"></div>
+          </div>
+        </section>
+
+        <!-- Bước 2: chọn nguồn đề -->
+        <section class="panel" aria-labelledby="h-source">
+          <h2 id="h-source" class="panel__title"><span class="step">2</span> Chọn nguồn đề</h2>
+          <div class="segmented" role="radiogroup" aria-labelledby="h-source">
+            <label class="segmented__item">
+              <input type="radio" name="source" value="truong" checked />
+              <span>Đề trường</span>
+            </label>
+            <label class="segmented__item">
+              <input type="radio" name="source" value="ngoai" />
+              <span>Đề ngoài</span>
+            </label>
+            <label class="segmented__item">
+              <input type="radio" name="source" value="all" />
+              <span>Gộp cả hai</span>
+            </label>
+          </div>
+          <p id="question-count-info" class="muted small" aria-live="polite">Hãy chọn một môn học.</p>
+        </section>
+
+        <!-- Tóm tắt cài đặt hiện tại -->
+        <section class="panel panel--compact">
+          <div class="settings-summary">
+            <ul id="settings-summary" class="chip-list">
+              <!-- JS render: ⏱ 15 phút · 🔀 Xáo câu · 📜 Cuộn · 💡 Sau khi nộp -->
+            </ul>
+            <button type="button" class="btn btn--ghost btn--sm" data-action="open-settings">Tùy chỉnh</button>
+          </div>
+        </section>
+
+        <button type="button" id="btn-start" class="btn btn--primary btn--block btn--lg" disabled>
+          Bắt đầu làm bài
+        </button>
+
+        <!-- Lịch sử gần đây -->
+        <section class="panel" aria-labelledby="h-history">
+          <h2 id="h-history" class="panel__title">Lịch sử gần đây</h2>
+          <ul id="history-list" class="history-list">
+            <li class="muted small">Chưa có lịch sử làm bài.</li>
+          </ul>
+        </section>
+      </main>
+
+      <footer class="app-footer">Dev by Thkc</footer>
+    </section>
+
+    <!-- =========================================================
+         SCREEN 3: LÀM BÀI
+         ========================================================= -->
+    <section id="screen-quiz" class="screen screen--quiz" data-screen="quiz" hidden>
+      <!-- Header thông minh: tự ẩn khi cuộn xuống, hiện lại khi cuộn lên -->
+      <header id="quiz-header" class="smart-header">
+        <div class="smart-header__row">
+          <button type="button" id="btn-quiz-exit" class="icon-btn" aria-label="Thoát bài làm">✕</button>
+
+          <div class="smart-header__title">
+            <strong id="quiz-subject">Môn học</strong>
+            <span id="quiz-progress-text" class="muted small">0/0 câu</span>
+          </div>
+
+          <div id="quiz-timer" class="timer" role="timer" aria-live="off" aria-label="Thời gian còn lại">--:--</div>
+        </div>
+
+        <div class="smart-header__row smart-header__row--tools">
+          <!-- Toggle chế độ: Cuộn <-> Từng câu -->
+          <label class="switch" for="toggle-view-mode">
+            <span class="switch__label">Cuộn</span>
+            <input type="checkbox" id="toggle-view-mode" role="switch" aria-label="Chế độ từng câu" />
+            <span class="switch__track"><span class="switch__thumb"></span></span>
+            <span class="switch__label">Từng câu</span>
+          </label>
+          <button type="button" class="icon-btn icon-btn--sm" data-action="open-settings" aria-label="Cài đặt">⚙️</button>
+        </div>
+
+        <div class="progress" role="progressbar" aria-label="Tiến độ làm bài"
+             aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div id="quiz-progress-bar" class="progress__bar"></div>
+        </div>
+      </header>
+
+      <main class="container container--quiz">
+        <!-- data-mode="scroll" | "single"; vùng nhận thao tác vuốt -->
+        <div id="quiz-container" class="quiz-container" data-mode="scroll" aria-live="polite">
+          <!-- renderer.js chèn các .question-card vào đây -->
+        </div>
+
+        <!-- Điều hướng chế độ Từng câu -->
+        <nav id="quiz-nav" class="quiz-nav" aria-label="Điều hướng câu hỏi" hidden>
+          <button type="button" id="btn-prev" class="btn btn--ghost">‹ Câu trước</button>
+          <span id="quiz-position" class="quiz-nav__pos">1 / 1</span>
+          <button type="button" id="btn-next" class="btn btn--ghost">Câu tiếp ›</button>
+        </nav>
+
+        <!-- Bảng số câu: nhảy nhanh tới câu bất kỳ -->
+        <details class="palette">
+          <summary class="palette__summary">Bảng câu hỏi</summary>
+          <div id="quiz-palette" class="palette__grid"></div>
+        </details>
+
+        <button type="button" id="btn-submit" class="btn btn--primary btn--block btn--lg">Nộp bài</button>
+      </main>
+    </section>
+
+    <!-- =========================================================
+         SCREEN 4: KẾT QUẢ
+         ========================================================= -->
+    <section id="screen-result" class="screen" data-screen="result" hidden>
+      <header class="topbar">
+        <h1 class="topbar__heading">Kết quả</h1>
+      </header>
+
+      <main class="container">
+        <section class="result-hero panel">
+          <div class="score-ring" style="--percent: 0">
+            <div class="score-ring__inner">
+              <span id="result-score" class="score-ring__value">0</span>
+              <span class="score-ring__total">/ <span id="result-total">0</span></span>
+            </div>
+          </div>
+          <p id="result-percent" class="result-hero__percent">0%</p>
+          <p id="result-subject" class="muted small"></p>
+
+          <ul class="stat-list">
+            <li class="stat stat--ok"><span id="result-correct">0</span><small>Đúng</small></li>
+            <li class="stat stat--bad"><span id="result-wrong">0</span><small>Sai</small></li>
+            <li class="stat stat--muted"><span id="result-unanswered">0</span><small>Bỏ trống</small></li>
+            <li class="stat"><span id="result-time">00:00</span><small>Thời gian</small></li>
+          </ul>
+
+          <!-- Trạng thái lưu: Đã lưu đám mây / Đang chờ đồng bộ (offline) -->
+          <p id="result-sync-status" class="sync-status" role="status" aria-live="polite"></p>
+        </section>
+
+        <div class="action-grid">
+          <button type="button" id="btn-retry-wrong" class="btn btn--primary">Chỉ làm lại những câu sai</button>
+          <button type="button" id="btn-retry-all" class="btn btn--ghost">Làm lại toàn bộ</button>
+          <button type="button" id="btn-result-home" class="btn btn--ghost">Về trang chủ</button>
+        </div>
+
+        <section class="panel" aria-labelledby="h-review">
+          <div class="panel__head">
+            <h2 id="h-review" class="panel__title">Xem lại bài làm</h2>
+            <label class="checkbox small">
+              <input type="checkbox" id="review-only-wrong" />
+              <span>Chỉ hiện câu sai</span>
+            </label>
+          </div>
+          <div id="result-review" class="review-list">
+            <!-- renderer.js chèn các .question-card (chế độ review) -->
+          </div>
+        </section>
+      </main>
+
+      <footer class="app-footer">Dev by Thkc</footer>
+    </section>
+  </div>
+
+  <!-- =========================================================
+       POPUP CÀI ĐẶT
+       ========================================================= -->
+  <dialog id="settings-dialog" class="modal" aria-labelledby="settings-title">
+    <form id="settings-form" class="modal__content" method="dialog">
+      <header class="modal__header">
+        <h2 id="settings-title">Cài đặt làm bài</h2>
+        <button type="button" class="icon-btn" data-action="close-settings" aria-label="Đóng">✕</button>
+      </header>
+
+      <div class="modal__body">
+        <div class="form__group">
+          <label for="set-time" class="form__label">
+            Thời gian làm bài: <strong><output id="set-time-output" for="set-time">15</output> phút</strong>
+          </label>
+          <input type="range" id="set-time" name="timeLimit" min="0" max="120" step="5" value="15" class="range" />
+          <p class="form__hint">Đặt 0 để làm bài không giới hạn thời gian.</p>
+        </div>
+
+        <label class="setting-row">
+          <span>
+            <strong>Xáo trộn câu hỏi</strong>
+            <small class="muted">Đổi thứ tự câu mỗi lần làm</small>
+          </span>
+          <span class="switch">
+            <input type="checkbox" name="shuffleQuestions" role="switch" />
+            <span class="switch__track"><span class="switch__thumb"></span></span>
+          </span>
+        </label>
+
+        <label class="setting-row">
+          <span>
+            <strong>Xáo trộn đáp án</strong>
+            <small class="muted">Đáp án có "shuffle": false giữ nguyên vị trí</small>
+          </span>
+          <span class="switch">
+            <input type="checkbox" name="shuffleOptions" role="switch" />
+            <span class="switch__track"><span class="switch__thumb"></span></span>
+          </span>
+        </label>
+
+        <fieldset class="fieldset">
+          <legend class="form__label">Chế độ hiển thị</legend>
+          <div class="segmented">
+            <label class="segmented__item">
+              <input type="radio" name="viewMode" value="scroll" checked />
+              <span>Cuộn toàn bộ</span>
+            </label>
+            <label class="segmented__item">
+              <input type="radio" name="viewMode" value="single" />
+              <span>Từng câu</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="fieldset">
+          <legend class="form__label">Thời điểm xem giải thích</legend>
+          <div class="segmented">
+            <label class="segmented__item">
+              <input type="radio" name="explainMode" value="instant" />
+              <span>Ngay khi chọn sai</span>
+            </label>
+            <label class="segmented__item">
+              <input type="radio" name="explainMode" value="after" checked />
+              <span>Sau khi nộp bài</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <p id="settings-sync-note" class="muted small">Cài đặt được đồng bộ lên tài khoản của bạn.</p>
+      </div>
+
+      <footer class="modal__footer">
+        <button type="button" class="btn btn--ghost" data-action="close-settings">Hủy</button>
+        <button type="submit" id="btn-save-settings" class="btn btn--primary">Lưu cài đặt</button>
+      </footer>
+
+      <div class="app-footer app-footer--modal">Dev by Thkc</div>
+    </form>
+  </dialog>
+
+  <!-- =========================================================
+       HỘP THOẠI XÁC NHẬN (dùng chung: nộp bài, thoát, đăng xuất)
+       ========================================================= -->
+  <dialog id="confirm-dialog" class="modal modal--sm" aria-labelledby="confirm-title">
+    <form class="modal__content" method="dialog">
+      <h2 id="confirm-title" class="modal__title">Xác nhận</h2>
+      <p id="confirm-message" class="modal__text"></p>
+      <footer class="modal__footer">
+        <button type="submit" value="cancel" class="btn btn--ghost">Hủy</button>
+        <button type="submit" value="ok" id="confirm-ok" class="btn btn--primary">Đồng ý</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <!-- Toast thông báo -->
+  <div id="toast-container" class="toast-container" role="status" aria-live="polite" aria-atomic="false"></div>
+
+  <!-- =========================================================
+       TEMPLATES (renderer.js clone để dựng DOM)
+       ========================================================= -->
+
+  <!-- Thẻ môn học -->
+  <template id="tpl-subject">
+    <label class="subject-card">
+      <input type="radio" name="subject" class="subject-card__input" />
+      <span class="subject-card__icon" aria-hidden="true"></span>
+      <span class="subject-card__name"></span>
+    </label>
+  </template>
+
+  <!-- Thẻ câu hỏi -->
+  <template id="tpl-question">
+    <article class="question-card" data-qid="" data-type="" data-state="unanswered">
+      <header class="question-card__head">
+        <span class="question-card__index"></span>
+        <span class="question-card__type badge"></span>
+      </header>
+
+      <div class="question-card__body math-content"></div>
+
+      <figure class="question-card__figure" hidden>
+        <img class="question-card__image" alt="Hình minh họa câu hỏi" loading="lazy" decoding="async" />
+      </figure>
+
+      <!-- MCQ & Đúng/Sai: các nút đáp án -->
+      <div class="question-card__options" role="radiogroup"></div>
+
+      <!-- Trả lời ngắn / điền khuyết -->
+      <form class="question-card__short" hidden autocomplete="off">
+        <input type="text" class="input short-input" placeholder="Nhập câu trả lời..." enterkeyhint="done" />
+        <button type="submit" class="btn btn--ghost btn--sm">Xác nhận</button>
+      </form>
+
+      <p class="question-card__feedback" role="status" hidden></p>
+
+      <!-- Lời giải dạng Accordion -->
+      <div class="accordion" hidden>
+        <button type="button" class="accordion__trigger" aria-expanded="false">
+          <span>💡 Xem lời giải</span>
+          <span class="accordion__chevron" aria-hidden="true">▾</span>
+        </button>
+        <div class="accordion__panel" role="region">
+          <div class="accordion__inner math-content"></div>
+        </div>
+      </div>
+    </article>
+  </template>
+
+  <!-- Nút đáp án -->
+  <template id="tpl-option">
+    <button type="button" class="option" role="radio" aria-checked="false" data-index="">
+      <span class="option__label"></span>
+      <span class="option__text math-content"></span>
+    </button>
+  </template>
+
+  <!-- Mục lịch sử -->
+  <template id="tpl-history-item">
+    <li class="history-item">
+      <span class="history-item__subject"></span>
+      <span class="history-item__date muted small"></span>
+      <span class="history-item__score"></span>
+    </li>
+  </template>
+
+  <!-- ===================== SCRIPTS ===================== -->
+  <!-- Entry point (ES Module, import Firebase v9 modular từ CDN gstatic) -->
+  <script type="module" src="js/app.js"></script>
+
+  <!-- Branding console -->
+  <script>
+    window.addEventListener('load', function () {
+      console.log(
+        '%c System Powered by Thkc ',
+        'background:#7aa2f7;color:#1e1f24;font-size:14px;font-weight:700;padding:6px 10px;border-radius:6px;'
+      );
+    });
+  </script>
+</body>
+</html>

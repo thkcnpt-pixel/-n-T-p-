@@ -1,0 +1,72 @@
+rules_version = '2';
+
+// ============================================================================
+// Firestore Security Rules — Web App Ôn Tập Trắc Nghiệm Đa Môn
+// Dev by Thkc
+//
+// Hướng dẫn sử dụng:
+// Sao chép toàn bộ nội dung file này vào Firebase Console -> Firestore Database
+// -> tab "Rules" -> bấm "Publish".
+// ============================================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------------------
+    // Hàm phụ trợ dùng chung
+    // ------------------------------------------------------------------------
+
+    // Người dùng đã đăng nhập qua Firebase Authentication
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Kiểm tra người dùng hiện tại có phải chủ sở hữu của tài liệu {userId}
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // Kiểm tra tài khoản Admin duy nhất (thkcnpt@gmail.com)
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token.email != null
+        && request.auth.token.email == 'thkcnpt@gmail.com';
+    }
+
+    // ------------------------------------------------------------------------
+    // 1. Collection `users/{userId}` và sub-collection `history/{historyId}`
+    //    Học sinh CHỈ được quyền read/write các document mang UID của chính họ.
+    // ------------------------------------------------------------------------
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /history/{historyId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // ------------------------------------------------------------------------
+    // 2. Collection `login_logs/{logId}` (Audit Log truy cập)
+    //    - READ:   Chỉ cấp quyền đọc duy nhất cho email admin `thkcnpt@gmail.com`.
+    //    - CREATE: Cho phép người dùng vừa đăng nhập ghi đúng bản ghi log của
+    //              chính họ (đủ 3 trường cốt lõi: timestamp, userAgent, ip).
+    //    - UPDATE / DELETE: Cấm tuyệt đối để bảo toàn tính toàn vẹn của nhật ký.
+    // ------------------------------------------------------------------------
+    match /login_logs/{logId} {
+      allow read: if isAdmin();
+
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.keys().hasAll(['timestamp', 'userAgent', 'ip'])
+        && request.resource.data.userAgent is string
+        && request.resource.data.ip is string;
+
+      allow update, delete: if false;
+    }
+
+    // Mặc định từ chối mọi đường dẫn khác
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

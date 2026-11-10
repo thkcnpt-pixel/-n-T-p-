@@ -1,0 +1,29 @@
+[
+  {
+    "id": "toan-1",
+    "type": "mcq",
+    "question": "Tìm giá trị của tích phân xác định sau:\n$$I = \\int_{0}^{\\pi/2} \\sin(x)\\,\\mathrm{d}x$$\nGiá trị của $I$ bằng bao nhiêu?",
+    "options": [
+      { "text": "$0$", "shuffle": true },
+      { "text": "$1$", "shuffle": true },
+      { "text": "$-1$", "shuffle": true },
+      { "text": "$\\dfrac{\\pi}{2}$", "shuffle": true }
+    ],
+    "answer": 1,
+    "explanation": "Nguyên hàm của $\\sin(x)$ là $-\\cos(x)$. Áp dụng công thức Newton–Leibniz:\n$$I = \\Big[-\\cos(x)\\Big]_{0}^{\\pi/2} = -\\cos\\left(\\frac{\\pi}{2}\\right) - (-\\cos(0)) = 0 + 1 = 1$$"
+  },
+  {
+    "id": "toan-2",
+    "type": "truefalse",
+    "question": "Mệnh đề sau đúng hay sai: Phương trình bậc hai $x^2 - 4x + 4 = 0$ có biệt thức $\\Delta = b^2 - 4ac = 0$ nên có nghiệm kép $x_1 = x_2 = 2$.",
+    "answer": true,
+    "explanation": "Ta có $a = 1, b = -4, c = 4 \\Rightarrow \\Delta = (-4)^2 - 4 \\cdot 1 \\cdot 4 = 0$. Nghiệm kép là $x = -\\dfrac{b}{2a} = 2$."
+  },
+  {
+    "id": "toan-3",
+    "type": "short",
+    "question": "Cho hàm số $f(x) = x^3 - 3x + 2$. Tính giá trị đạo hàm $f'(2)$ tại điểm $x = 2$.",
+    "answer": ["9", "9.0"],
+    "explanation": "Ta có đạo hàm $f'(x) = 3x^2 - 3$. Thay $x = 2$ vào: $f'(2) = 3 \\cdot 2^2 - 3 = 12 - 3 = 9$."
+  }
+]

@@ -1,0 +1,17 @@
+[
+  {
+    "id": "toan",
+    "name": "Toán học",
+    "icon": "📐"
+  },
+  {
+    "id": "vatly",
+    "name": "Vật lý",
+    "icon": "⚡"
+  },
+  {
+    "id": "tinhoc",
+    "name": "Tin học",
+    "icon": "💻"
+  }
+]

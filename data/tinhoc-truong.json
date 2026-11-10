@@ -1,0 +1,29 @@
+[
+  {
+    "id": "tinhoc-1",
+    "type": "mcq",
+    "question": "Trong ngôn ngữ lập trình JavaScript (ES6+), từ khóa nào dùng để khai báo biến có phạm vi khối (block scope)?",
+    "options": [
+      { "text": "let", "shuffle": true },
+      { "text": "const", "shuffle": true },
+      { "text": "var", "shuffle": true },
+      { "text": "Cả let và const đều đúng", "shuffle": false }
+    ],
+    "answer": 3,
+    "explanation": "Cả `let` và `const` đều có phạm vi khối (block scope `{ ... }`), trong khi `var` có phạm vi hàm (function scope). Lưu ý: đáp án cuối có `\"shuffle\": false` nên luôn cố định ở vị trí D ngay cả khi bật xáo trộn đáp án."
+  },
+  {
+    "id": "tinhoc-2",
+    "type": "truefalse",
+    "question": "Giao thức HTTPS sử dụng TLS/SSL để mã hóa dữ liệu truyền giữa trình duyệt và máy chủ web.",
+    "answer": true,
+    "explanation": "Đúng. HTTPS (Hypertext Transfer Protocol Secure) kết hợp HTTP với tầng bảo mật TLS/SSL nhằm đảm bảo tính bí mật và toàn vẹn dữ liệu."
+  },
+  {
+    "id": "tinhoc-3",
+    "type": "short",
+    "question": "Cấu trúc dữ liệu hoạt động theo nguyên tắc \"Vào sau, Ra trước\" (Last In, First Out) viết tắt tiếng Anh gồm 4 chữ cái là gì?",
+    "answer": ["lifo", "stack", "ngăn xếp"],
+    "explanation": "Nguyên tắc Last In, First Out viết tắt là LIFO (đặc trưng của cấu trúc dữ liệu Ngăn xếp – Stack)."
+  }
+]

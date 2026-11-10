@@ -1,0 +1,30 @@
+[
+  {
+    "id": "vatly-1",
+    "type": "mcq",
+    "question": "Quan sát sơ đồ mạch điện hình bên dưới. Biết hiệu điện thế nguồn $U = 12\\text{ V}$ và hai điện trở mắc nối tiếp $R_1 = 2\\,\\Omega$, $R_2 = 4\\,\\Omega$. Cường độ dòng điện $I$ chạy trong mạch chính là bao nhiêu?",
+    "image": "images/sample.jpg",
+    "options": [
+      { "text": "$1\\text{ A}$", "shuffle": true },
+      { "text": "$2\\text{ A}$", "shuffle": true },
+      { "text": "$3\\text{ A}$", "shuffle": true },
+      { "text": "$6\\text{ A}$", "shuffle": true }
+    ],
+    "answer": 1,
+    "explanation": "Điện trở tương đương của đoạn mạch nối tiếp là $R_{\\text{tđ}} = R_1 + R_2 = 2 + 4 = 6\\,\\Omega$. Theo định luật Ohm:\n$$I = \\frac{U}{R_{\\text{tđ}}} = \\frac{12}{6} = 2\\text{ A}$$"
+  },
+  {
+    "id": "vatly-2",
+    "type": "truefalse",
+    "question": "Trong chân không, mọi sóng điện từ đều lan truyền với cùng tốc độ bằng tốc độ ánh sáng $c \\approx 3 \\times 10^8\\text{ m/s}$.",
+    "answer": true,
+    "explanation": "Đúng. Trong chân không, tốc độ lan truyền của sóng điện từ không phụ thuộc tần số và luôn bằng $c \\approx 3 \\times 10^8\\text{ m/s}$."
+  },
+  {
+    "id": "vatly-3",
+    "type": "short",
+    "question": "Đơn vị đo công suất điện trong hệ đo lường quốc tế SI có tên gọi là gì?",
+    "answer": ["watt", "oat", "oát", "w"],
+    "explanation": "Đơn vị đo công suất trong hệ SI là Watt (ký hiệu $\\text{W}$, tiếng Việt thường đọc là Oát), đặt theo tên nhà phát minh James Watt."
+  }
+]

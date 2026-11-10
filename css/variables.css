@@ -1,0 +1,133 @@
+/* ==========================================================================
+   variables.css — Design tokens (Dark Mode mặc định)
+   Dev by Thkc
+   ========================================================================== */
+
+:root {
+  color-scheme: dark;
+
+  /* ---------- Bảng màu nền (xám than) ---------- */
+  --c-bg:            #1e1f24;   /* nền app — trùng theme-color */
+  --c-bg-elevated:   #25262c;   /* panel, card */
+  --c-surface:       #2c2e35;   /* input, option */
+  --c-surface-hover: #34363f;
+  --c-surface-active:#3c3f49;
+  --c-border:        #3a3c45;
+  --c-border-strong: #4a4d58;
+  --c-overlay:       rgba(10, 11, 14, 0.66);
+
+  /* ---------- Chữ ---------- */
+  --c-text:          #e4e6eb;   /* chữ chính: sáng nhưng không trắng gắt */
+  --c-text-muted:    #9da3ae;
+  --c-text-faint:    #6b717c;
+  --c-text-invert:   #1e1f24;
+
+  /* ---------- Màu nhấn ---------- */
+  --c-primary:        #7aa2f7;  /* xanh dịu */
+  --c-primary-hover:  #8fb1f9;
+  --c-primary-active: #6690ec;
+  --c-primary-soft:   rgba(122, 162, 247, 0.14);
+  --c-primary-ring:   rgba(122, 162, 247, 0.45);
+
+  /* ---------- Trạng thái ---------- */
+  --c-success:       #73c991;
+  --c-success-soft:  rgba(115, 201, 145, 0.14);
+  --c-danger:        #f28b82;
+  --c-danger-soft:   rgba(242, 139, 130, 0.14);
+  --c-warning:       #e8c07d;
+  --c-warning-soft:  rgba(232, 192, 125, 0.14);
+  --c-info:          #7dcfff;
+  --c-info-soft:     rgba(125, 207, 255, 0.14);
+
+  /* ---------- Typography ---------- */
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+               "Noto Sans", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  --fs-xs:   0.75rem;   /* 12px */
+  --fs-sm:   0.875rem;  /* 14px */
+  --fs-base: 1rem;      /* 16px — tránh iOS tự zoom khi focus input */
+  --fs-md:   1.0625rem; /* 17px — nội dung câu hỏi */
+  --fs-lg:   1.25rem;
+  --fs-xl:   1.5rem;
+  --fs-2xl:  2rem;
+  --fs-3xl:  2.5rem;
+
+  --fw-regular: 400;
+  --fw-medium:  500;
+  --fw-semi:    600;
+  --fw-bold:    700;
+
+  --lh-tight:  1.25;
+  --lh-base:   1.6;
+  --lh-loose:  1.8;
+
+  /* ---------- Khoảng cách (thang 4px) ---------- */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.25rem;
+  --sp-6: 1.5rem;
+  --sp-8: 2rem;
+  --sp-10: 2.5rem;
+  --sp-12: 3rem;
+
+  /* ---------- Bo góc ---------- */
+  --radius-sm:   6px;
+  --radius-md:   10px;
+  --radius-lg:   14px;
+  --radius-xl:   20px;
+  --radius-full: 999px;
+
+  /* ---------- Đổ bóng (nhẹ, hợp nền tối) ---------- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
+
+  /* ---------- Chuyển động ---------- */
+  --ease-out:    cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:    120ms;
+  --dur-base:    220ms;
+  --dur-slow:    360ms;
+
+  /* ---------- Layout ---------- */
+  --container-max:   720px;
+  --tap-min:         44px;       /* kích thước chạm tối thiểu */
+  --topbar-h:        56px;
+  --smart-header-h:  112px;      /* tổng chiều cao header màn làm bài */
+  --quiz-nav-h:      64px;
+
+  /* Safe-area cho iPhone tai thỏ / thanh home */
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left, 0px);
+  --safe-right:  env(safe-area-inset-right, 0px);
+
+  /* ---------- Lớp chồng (z-index) ---------- */
+  --z-base:     1;
+  --z-sticky:   100;
+  --z-header:   200;
+  --z-netbar:   300;
+  --z-modal:    1000;
+  --z-toast:    1100;
+  --z-loader:   1200;
+}
+
+/* Màn hình rộng: tăng nhẹ cỡ chữ nội dung */
+@media (min-width: 768px) {
+  :root {
+    --fs-md: 1.125rem;
+    --container-max: 780px;
+  }
+}
+
+/* Người dùng muốn giảm chuyển động */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-base: 0ms;
+    --dur-slow: 0ms;
+  }
+}
