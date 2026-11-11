@@ -38,8 +38,12 @@ export const DEFAULT_TOAN_NGOAI_CATEGORIES = Object.freeze([
     icon: '📚',
     description: 'Các đề ôn tập tổng hợp kiến thức Giải tích & Hình học',
     lessons: [
-      { id: 'bai-1', name: 'Bài 1: Đề tổng hợp số 1', questions: [] },
-      { id: 'bai-2', name: 'Bài 2: Đề tổng hợp số 2', questions: [] },
+      { id: 'bai_01', name: 'Bài 01: Góc giữa đường thẳng và mặt phẳng', questions: [] },
+      { id: 'bai_02', name: 'Bài 02: Góc nhị diện và góc giữa hai mặt phẳng', questions: [] },
+      { id: 'bai_03', name: 'Bài 03: Khoảng cách từ điểm đến mặt phẳng', questions: [] },
+      { id: 'bai_04', name: 'Bài 04: Khoảng cách giữa hai đường thẳng chéo nhau', questions: [] },
+      { id: 'bai_05', name: 'Bài 05: Thể tích khối đa diện', questions: [] },
+      { id: 'bai_06', name: 'Bài 06: Các bài toán liên quan đến khối nón – khối cầu – khối trụ', questions: [] },
     ],
   },
   {
