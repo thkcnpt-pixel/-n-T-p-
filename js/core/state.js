@@ -234,6 +234,8 @@ export function resetSession() {
     source: SOURCES.TRUONG,
     categoryId: null,
     categoryName: null,
+    chapterId: null,
+    chapterName: null,
     lessonId: null,
     lessonName: null,
     parts: [1, 2, 3],

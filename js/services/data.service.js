@@ -37,23 +37,35 @@ export const DEFAULT_TOAN_NGOAI_CATEGORIES = Object.freeze([
     name: 'Tổng hợp',
     icon: '📚',
     description: 'Các đề ôn tập tổng hợp kiến thức Giải tích & Hình học',
-    lessons: [
-      { id: 'bai_01', name: 'Bài 01: Góc giữa đường thẳng và mặt phẳng', questions: [] },
-      { id: 'bai_02', name: 'Bài 02: Góc nhị diện và góc giữa hai mặt phẳng', questions: [] },
-      { id: 'bai_03', name: 'Bài 03: Khoảng cách từ điểm đến mặt phẳng', questions: [] },
-      { id: 'bai_04', name: 'Bài 04: Khoảng cách giữa hai đường thẳng chéo nhau', questions: [] },
-      { id: 'bai_05', name: 'Bài 05: Thể tích khối đa diện', questions: [] },
-      { id: 'bai_06', name: 'Bài 06: Các bài toán liên quan đến khối nón – khối cầu – khối trụ', questions: [] },
+    chapters: [
+      {
+        id: 'chuong_6',
+        name: 'Chương 6: Góc, khoảng cách và thể tích không gian',
+        lessons: [
+          { id: 'bai_01', name: 'Bài 01: Góc giữa đường thẳng và mặt phẳng', questions: [] },
+          { id: 'bai_02', name: 'Bài 02: Góc nhị diện và góc giữa hai mặt phẳng', questions: [] },
+          { id: 'bai_03', name: 'Bài 03: Khoảng cách từ điểm đến mặt phẳng', questions: [] },
+          { id: 'bai_04', name: 'Bài 04: Khoảng cách giữa hai đường thẳng chéo nhau', questions: [] },
+          { id: 'bai_05', name: 'Bài 05: Thể tích khối đa diện', questions: [] },
+          { id: 'bai_06', name: 'Bài 06: Các bài toán liên quan đến khối nón – khối cầu – khối trụ', questions: [] },
+        ],
+      },
     ],
+    lessons: [],
   },
   {
     id: 'xacsuat',
     name: 'Xác suất',
     icon: '🎲',
     description: 'Tổ hợp, Xác suất cổ điển và Xác suất có điều kiện',
+    chapters: [],
     lessons: [
-      { id: 'bai-1', name: 'Bài 1: Quy tắc đếm & Xác suất cổ điển', questions: [] },
-      { id: 'bai-2', name: 'Bài 2: Xác suất có điều kiện & Công thức Bayes', questions: [] },
+      { id: 'bai_01', name: 'Bài 01: Các quy tắc đếm cơ bản', questions: [] },
+      { id: 'bai_02', name: 'Bài 02: Xác suất và các quy tắc tính xác suất', questions: [] },
+      { id: 'bai_03', name: 'Bài 03: Bài toán xếp chỗ phần 1', questions: [] },
+      { id: 'bai_04', name: 'Bài 04: Bài toán xếp chỗ phần 2', questions: [] },
+      { id: 'bai_05', name: 'Bài 05: Hoán vị vòng tròn', questions: [] },
+      { id: 'bai_06', name: 'Bài 06: Bài toán chia kẹo Euler', questions: [] },
     ],
   },
 ]);
@@ -81,6 +93,7 @@ const fileCache = new Map();
  * @property {string} subjectId
  * @property {'truong'|'ngoai'} source
  * @property {string|null} [categoryId]
+ * @property {string|null} [chapterId]
  * @property {string|null} [lessonId]
  * @property {string} question
  * @property {string|null} image
@@ -98,11 +111,19 @@ const fileCache = new Map();
  */
 
 /**
+ * @typedef {Object} ChapterNode
+ * @property {string} id
+ * @property {string} name
+ * @property {LessonNode[]} lessons
+ */
+
+/**
  * @typedef {Object} CategoryNode
  * @property {string} id
  * @property {string} name
  * @property {string} icon
  * @property {string} description
+ * @property {ChapterNode[]} [chapters]
  * @property {LessonNode[]} lessons
  */
 
@@ -204,7 +225,8 @@ export async function loadNestedCategories(subjectId, source) {
  * @typedef {Object} QuestionFilterOptions
  * @property {number[]} [parts]       Các phần ôn cần lọc: [1, 2, 3]
  * @property {string|null} [categoryId] Mã chuyên đề (VD: 'tonghop' | 'xacsuat')
- * @property {string|null} [lessonId]   Mã bài nhỏ (VD: 'bai-1' | 'bai-2')
+ * @property {string|null} [chapterId]  Mã chương (VD: 'chuong_6')
+ * @property {string|null} [lessonId]   Mã bài nhỏ (VD: 'bai_01' | 'bai_02')
  */
 
 /**
@@ -225,25 +247,48 @@ export async function loadQuestions(subjectId, source, filterOrParts) {
     ? { parts: filterOrParts }
     : (filterOrParts || {});
 
-  const baseQuestions = selectQuestionsFromParsed(parsed, opts.categoryId, opts.lessonId);
+  const baseQuestions = selectQuestionsFromParsed(parsed, opts.categoryId, opts.chapterId, opts.lessonId);
   const filtered = filterQuestionsByParts(baseQuestions, opts.parts);
   return structuredClone(filtered);
 }
 
 /**
- * Trích xuất danh sách câu hỏi từ dữ liệu đã parse (hỗ trợ lọc theo categoryId & lessonId).
+ * Trích xuất danh sách câu hỏi từ dữ liệu đã parse (hỗ trợ lọc theo categoryId, chapterId & lessonId).
  * @param {{kind: string, questions: Question[], categories: CategoryNode[]}} parsed
  * @param {string|null} [categoryId]
+ * @param {string|null} [chapterId]
  * @param {string|null} [lessonId]
  * @returns {Question[]}
  */
-function selectQuestionsFromParsed(parsed, categoryId, lessonId) {
+function selectQuestionsFromParsed(parsed, categoryId, chapterId, lessonId) {
   if (!parsed) return [];
 
   if (parsed.kind === 'nested' && Array.isArray(parsed.categories)) {
     if (categoryId) {
       const cat = parsed.categories.find((c) => c.id === categoryId);
       if (!cat) return [];
+
+      // Trường hợp chuyên đề có phân chia theo Chương (VD: Tổng hợp -> Chương 6 -> Bài 01..06)
+      if (Array.isArray(cat.chapters) && cat.chapters.length > 0) {
+        if (chapterId) {
+          const ch = cat.chapters.find((chItem) => chItem.id === chapterId);
+          if (!ch) return [];
+          if (lessonId) {
+            const les = ch.lessons.find((l) => l.id === lessonId);
+            return les ? les.questions : [];
+          }
+          return ch.lessons.flatMap((l) => l.questions);
+        }
+        if (lessonId) {
+          for (const ch of cat.chapters) {
+            const les = ch.lessons.find((l) => l.id === lessonId);
+            if (les) return les.questions;
+          }
+          return [];
+        }
+        return cat.chapters.flatMap((ch) => ch.lessons.flatMap((l) => l.questions));
+      }
+
       if (lessonId) {
         const les = cat.lessons.find((l) => l.id === lessonId);
         return les ? les.questions : [];
@@ -275,18 +320,18 @@ export function filterQuestionsByParts(questions, parts) {
 }
 
 /**
- * Thống kê số lượng câu hỏi theo từng phần (Phần 1, 2, 3) cho 1 môn + nguồn đề (+ bài nhỏ nếu có).
+ * Thống kê số lượng câu hỏi theo từng phần (Phần 1, 2, 3) cho 1 môn + nguồn đề (+ chương/bài nhỏ nếu có).
  * Không throw — trả về null nếu file lỗi.
  * @param {string} subjectId
  * @param {'truong'|'ngoai'} source
- * @param {{categoryId?: string|null, lessonId?: string|null}} [scope]
+ * @param {{categoryId?: string|null, chapterId?: string|null, lessonId?: string|null}} [scope]
  * @returns {Promise<{total: number, byPart: {1: number, 2: number, 3: number}}|null>}
  */
 export async function getQuestionBreakdown(subjectId, source, scope = {}) {
   try {
     const cleanSource = source === SOURCES.NGOAI ? SOURCES.NGOAI : SOURCES.TRUONG;
     const parsed = await loadFile(subjectId, cleanSource);
-    const list = selectQuestionsFromParsed(parsed, scope.categoryId, scope.lessonId);
+    const list = selectQuestionsFromParsed(parsed, scope.categoryId, scope.chapterId, scope.lessonId);
     const byPart = { 1: 0, 2: 0, 3: 0 };
     list.forEach((q) => {
       const p = Number(q.part) || TYPE_TO_PART[q.type] || 1;
@@ -336,13 +381,13 @@ async function loadFile(subjectId, source) {
 
 /**
  * Phân tích dữ liệu JSON thô:
- * - Nếu là cấu trúc lồng nhau (`{ categories: [...] }`) hoặc là `toan-ngoai` -> chuẩn hóa cây Chuyên đề -> Bài nhỏ -> Câu hỏi.
+ * - Nếu là cấu trúc lồng nhau (`{ categories: [...] }`) hoặc là `toan-ngoai` -> chuẩn hóa cây Chuyên đề -> (Chương) -> Bài nhỏ -> Câu hỏi.
  * - Nếu là mảng phẳng (`[...]`) -> chuẩn hóa danh sách câu hỏi.
  */
 function parseRawFileData(raw, subjectId, source, cacheKey) {
   const seen = new Set();
 
-  // Trường hợp 1: Cấu trúc lồng nhau (Chuyên đề -> Bài nhỏ -> Câu hỏi)
+  // Trường hợp 1: Cấu trúc lồng nhau (Chuyên đề -> Chương / Bài nhỏ -> Câu hỏi)
   const rawCategories = !Array.isArray(raw) && raw && Array.isArray(raw.categories)
     ? raw.categories
     : null;
@@ -357,18 +402,10 @@ function parseRawFileData(raw, subjectId, source, cacheKey) {
     /** @type {Question[]} */
     const allQuestions = [];
 
-    sourceCats.forEach((catRaw, cIdx) => {
-      if (!catRaw || typeof catRaw !== 'object') return;
-      const catId = String(catRaw.id || `cat-${cIdx + 1}`).trim();
-      const catName = String(catRaw.name || `Chuyên đề ${cIdx + 1}`).trim();
-      const catIcon = String(catRaw.icon || '📂').trim();
-      const catDesc = String(catRaw.description || '').trim();
-
+    const parseLessonsList = (rawLessons, catId, chId = null) => {
       /** @type {LessonNode[]} */
       const lessons = [];
-      const rawLessons = Array.isArray(catRaw.lessons) ? catRaw.lessons : [];
-
-      rawLessons.forEach((lesRaw, lIdx) => {
+      (Array.isArray(rawLessons) ? rawLessons : []).forEach((lesRaw, lIdx) => {
         if (!lesRaw || typeof lesRaw !== 'object') return;
         const lesId = String(lesRaw.id || `bai-${lIdx + 1}`).trim();
         const lesName = String(lesRaw.name || `Bài ${lIdx + 1}`).trim();
@@ -381,9 +418,10 @@ function parseRawFileData(raw, subjectId, source, cacheKey) {
             subjectId,
             source,
             categoryId: catId,
+            chapterId: chId,
             lessonId: lesId,
             index: qIdx,
-            file: `${cacheKey}/${catId}/${lesId}`,
+            file: chId ? `${cacheKey}/${catId}/${chId}/${lesId}` : `${cacheKey}/${catId}/${lesId}`,
           });
           if (!q) return;
           if (seen.has(q.key)) {
@@ -396,12 +434,38 @@ function parseRawFileData(raw, subjectId, source, cacheKey) {
 
         lessons.push({ id: lesId, name: lesName, questions: qs });
       });
+      return lessons;
+    };
+
+    sourceCats.forEach((catRaw, cIdx) => {
+      if (!catRaw || typeof catRaw !== 'object') return;
+      const catId = String(catRaw.id || `cat-${cIdx + 1}`).trim();
+      const catName = String(catRaw.name || `Chuyên đề ${cIdx + 1}`).trim();
+      const catIcon = String(catRaw.icon || '📂').trim();
+      const catDesc = String(catRaw.description || '').trim();
+
+      /** @type {ChapterNode[]} */
+      const chapters = [];
+      if (Array.isArray(catRaw.chapters)) {
+        catRaw.chapters.forEach((chRaw, chIdx) => {
+          if (!chRaw || typeof chRaw !== 'object') return;
+          const chId = String(chRaw.id || `chuong-${chIdx + 1}`).trim();
+          const chName = String(chRaw.name || `Chương ${chIdx + 1}`).trim();
+          const chLessons = parseLessonsList(chRaw.lessons, catId, chId);
+          if (chLessons.length > 0) {
+            chapters.push({ id: chId, name: chName, lessons: chLessons });
+          }
+        });
+      }
+
+      const lessons = parseLessonsList(catRaw.lessons, catId, null);
 
       categories.push({
         id: catId,
         name: catName,
         icon: catIcon,
         description: catDesc,
+        chapters,
         lessons,
       });
     });
@@ -441,7 +505,7 @@ function parseRawFileData(raw, subjectId, source, cacheKey) {
 
 /**
  * @param {any} raw
- * @param {{subjectId: string, source: string, categoryId?: string, lessonId?: string, index: number, file: string}} ctx
+ * @param {{subjectId: string, source: string, categoryId?: string, chapterId?: string|null, lessonId?: string, index: number, file: string}} ctx
  * @returns {Question|null}
  */
 function normalizeQuestion(raw, ctx) {
@@ -461,7 +525,9 @@ function normalizeQuestion(raw, ctx) {
   const part = rawPart === 1 || rawPart === 2 || rawPart === 3 ? rawPart : TYPE_TO_PART[type];
 
   const keyPrefix = ctx.categoryId && ctx.lessonId
-    ? `${ctx.subjectId}:${ctx.source}:${ctx.categoryId}:${ctx.lessonId}:${id}`
+    ? (ctx.chapterId
+        ? `${ctx.subjectId}:${ctx.source}:${ctx.categoryId}:${ctx.chapterId}:${ctx.lessonId}:${id}`
+        : `${ctx.subjectId}:${ctx.source}:${ctx.categoryId}:${ctx.lessonId}:${id}`)
     : `${ctx.subjectId}:${ctx.source}:${id}`;
 
   const base = {
@@ -472,6 +538,7 @@ function normalizeQuestion(raw, ctx) {
     subjectId: ctx.subjectId,
     source: ctx.source,
     categoryId: ctx.categoryId || null,
+    chapterId: ctx.chapterId || null,
     lessonId: ctx.lessonId || null,
     question,
     image: typeof raw.image === 'string' && raw.image.trim() ? raw.image.trim() : null,

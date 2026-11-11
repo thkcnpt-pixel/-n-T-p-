@@ -1549,3 +1549,84 @@
   gap: var(--sp-2);
   flex-shrink: 0;
 }
+
+/* Cấp Chương lồng bên trong Chuyên đề (VD: Tổng hợp -> Chương 6 -> Bài 01..06) */
+.chapter-item {
+  background: var(--c-bg-elevated);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: border-color var(--dur-base);
+}
+
+.chapter-item.is-open {
+  border-color: var(--c-primary);
+}
+
+.chapter-item__header {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  width: 100%;
+  padding: var(--sp-3) var(--sp-4);
+  text-align: left;
+  transition: background-color var(--dur-fast);
+}
+
+.chapter-item__header:hover {
+  background: var(--c-surface-hover);
+}
+
+.chapter-item__icon {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--c-surface);
+  font-size: 1.15rem;
+}
+
+.chapter-item__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.chapter-item__title {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semi);
+  color: var(--c-text);
+}
+
+.chapter-item__desc {
+  font-size: var(--fs-xs);
+}
+
+.chapter-item__chevron {
+  font-size: var(--fs-base);
+  color: var(--c-text-muted);
+  transition: transform var(--dur-base) var(--ease-out);
+}
+
+.chapter-item.is-open .chapter-item__chevron {
+  transform: rotate(180deg);
+  color: var(--c-primary);
+}
+
+.chapter-item__lessons {
+  display: none;
+  flex-direction: column;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  border-top: 1px dashed var(--c-border);
+  background: var(--c-surface);
+}
+
+.chapter-item.is-open .chapter-item__lessons {
+  display: flex;
+}
+

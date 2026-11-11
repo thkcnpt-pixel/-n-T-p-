@@ -320,6 +320,8 @@ function bindHomeWizardEvents() {
         source: validSource,
         categoryId: null,
         categoryName: null,
+        chapterId: null,
+        chapterName: null,
         lessonId: null,
         lessonName: null,
       });
@@ -333,23 +335,27 @@ function bindHomeWizardEvents() {
     });
   });
 
-  // Màn hình 2b: Sự kiện đóng/mở danh mục Chuyên đề & chọn Bài nhỏ (delegation trên #category-accordion-list)
+  // Màn hình 2b: Sự kiện đóng/mở danh mục Chuyên đề, Chương & chọn Bài nhỏ (delegation trên #category-accordion-list)
   const catListEl = document.getElementById('category-accordion-list');
   catListEl?.addEventListener('click', (e) => {
     const target = /** @type {HTMLElement|null} */ (e.target);
     if (!target) return;
 
-    // 1) Bấm vào nút Bài nhỏ (VD: Bài 1, Bài 2) -> lưu lựa chọn và qua Màn hình 3
+    // 1) Bấm vào nút Bài nhỏ (VD: Bài 01, Bài 02) -> lưu lựa chọn và qua Màn hình 3
     const lessonBtn = target.closest('.lesson-btn');
     if (lessonBtn) {
       const catId = lessonBtn.getAttribute('data-category-id');
       const catName = lessonBtn.getAttribute('data-category-name');
+      const chId = lessonBtn.getAttribute('data-chapter-id') || null;
+      const chName = lessonBtn.getAttribute('data-chapter-name') || null;
       const lesId = lessonBtn.getAttribute('data-lesson-id');
       const lesName = lessonBtn.getAttribute('data-lesson-name');
 
       patchState('selection', {
         categoryId: catId,
         categoryName: catName,
+        chapterId: chId,
+        chapterName: chName,
         lessonId: lesId,
         lessonName: lesName,
       });
@@ -357,7 +363,17 @@ function bindHomeWizardEvents() {
       return;
     }
 
-    // 2) Bấm vào thanh tiêu đề Chuyên đề ("Tổng hợp" / "Xác suất") -> xổ danh sách bài nhỏ
+    // 2) Bấm vào thanh tiêu đề Chương (VD: Chương 6) -> xổ danh sách bài nhỏ trong chương đó
+    const chapterHeaderBtn = target.closest('.chapter-item__header');
+    if (chapterHeaderBtn) {
+      const chEl = chapterHeaderBtn.closest('.chapter-item');
+      if (!chEl) return;
+      const isOpen = chEl.classList.toggle('is-open');
+      chapterHeaderBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      return;
+    }
+
+    // 3) Bấm vào thanh tiêu đề Chuyên đề ("Tổng hợp" / "Xác suất") -> xổ danh sách Chương hoặc Bài nhỏ
     const headerBtn = target.closest('.category-item__header');
     if (headerBtn) {
       const itemEl = headerBtn.closest('.category-item');
@@ -387,7 +403,7 @@ function bindHomeWizardEvents() {
   // Nút CTA "Bắt đầu làm bài ngay" ở cuối Màn hình 3
   const startBtn = /** @type {HTMLButtonElement} */ (document.getElementById('btn-start'));
   startBtn?.addEventListener('click', async () => {
-    const { subjectId, source, categoryId, lessonId, lessonName, parts } = getState('selection');
+    const { subjectId, source, categoryId, chapterId, lessonId, lessonName, parts } = getState('selection');
     const subject = getSubjectById(subjectId);
     if (!subject) {
       showToast('Vui lòng chọn một môn học.', 'warning');
@@ -405,6 +421,7 @@ function bindHomeWizardEvents() {
       const questions = await loadQuestions(subjectId, source, {
         parts,
         categoryId,
+        chapterId,
         lessonId,
       });
       if (!questions.length) {
@@ -492,6 +509,8 @@ function handleSubjectPick(subj) {
       subjectId: subj.id,
       categoryId: null,
       categoryName: null,
+      chapterId: null,
+      chapterName: null,
       lessonId: null,
       lessonName: null,
     });
@@ -502,6 +521,8 @@ function handleSubjectPick(subj) {
       source: SOURCES.TRUONG,
       categoryId: null,
       categoryName: null,
+      chapterId: null,
+      chapterName: null,
       lessonId: null,
       lessonName: null,
     });
@@ -594,7 +615,7 @@ async function populateStep2Sources(subject) {
 }
 
 /**
- * Cập nhật giao diện Màn hình trung gian 2b (Toán > Đề ngoài: Chuyên đề "Tổng hợp" & "Xác suất" -> Bài nhỏ).
+ * Cập nhật giao diện Màn hình trung gian 2b (Toán > Đề ngoài: Chuyên đề "Tổng hợp" & "Xác suất" -> Chương -> Bài nhỏ).
  * Luôn hiển thị ngay lập tức bộ khung mặc định trước, sau đó mới cập nhật dữ liệu thực tế từ JSON.
  * @param {{id: string, name: string, icon: string, sources: string[]}} subject
  */
@@ -613,8 +634,52 @@ async function populateStep2bCategories(subject) {
 }
 
 /**
- * Dựng danh sách các Chuyên đề (Tổng hợp, Xác suất) và các nút Bài nhỏ bên trong `#category-accordion-list`.
- * @param {Array<{id: string, name: string, icon?: string, description?: string, lessons?: Array<{id: string, name: string, questions?: any[]}>}>} categories
+ * Tạo nút Bài nhỏ (`.lesson-btn`).
+ */
+function createLessonButton(cat, les, ch = null) {
+  const lesBtn = document.createElement('button');
+  lesBtn.type = 'button';
+  lesBtn.className = 'lesson-btn';
+  lesBtn.setAttribute('data-category-id', cat.id);
+  lesBtn.setAttribute('data-category-name', cat.name);
+  if (ch) {
+    lesBtn.setAttribute('data-chapter-id', ch.id);
+    lesBtn.setAttribute('data-chapter-name', ch.name);
+  }
+  lesBtn.setAttribute('data-lesson-id', les.id);
+  const fullLabel = ch
+    ? `${cat.name} · ${ch.name} · ${les.name}`
+    : `${cat.name} · ${les.name}`;
+  lesBtn.setAttribute('data-lesson-name', fullLabel);
+
+  const nameSpan = document.createElement('span');
+  nameSpan.className = 'lesson-btn__name';
+  nameSpan.textContent = les.name;
+
+  const metaSpan = document.createElement('span');
+  metaSpan.className = 'lesson-btn__meta';
+
+  const qCount = Array.isArray(les.questions) ? les.questions.length : 0;
+  const badge = document.createElement('span');
+  badge.className = 'badge badge--info';
+  badge.textContent = `${qCount} câu`;
+
+  const arrow = document.createElement('span');
+  arrow.className = 'muted';
+  arrow.textContent = '›';
+
+  metaSpan.appendChild(badge);
+  metaSpan.appendChild(arrow);
+
+  lesBtn.appendChild(nameSpan);
+  lesBtn.appendChild(metaSpan);
+  return lesBtn;
+}
+
+/**
+ * Dựng danh sách các Chuyên đề (Tổng hợp -> các Chương -> các Bài nhỏ; Xác suất -> các Bài nhỏ) bên trong `#category-accordion-list`.
+ * Chỉ hiển thị các Chương đã có bài học (theo yêu cầu người dùng).
+ * @param {Array<{id: string, name: string, icon?: string, description?: string, chapters?: Array<{id: string, name: string, lessons?: Array<{id: string, name: string, questions?: any[]}>}>, lessons?: Array<{id: string, name: string, questions?: any[]}>}>} categories
  */
 function renderCategoryAccordionList(categories) {
   const listEl = document.getElementById('category-accordion-list');
@@ -629,7 +694,7 @@ function renderCategoryAccordionList(categories) {
 
   safeCategories.forEach((cat, idx) => {
     const item = document.createElement('div');
-    // Mở sẵn danh mục đầu tiên để học sinh thấy ngay các bài nhỏ bên trong
+    // Mở sẵn danh mục đầu tiên để học sinh thấy ngay các Chương / Bài bên trong
     const isOpen = idx === 0;
     item.className = `category-item${isOpen ? ' is-open' : ''}`;
     item.dataset.categoryId = cat.id;
@@ -653,10 +718,22 @@ function renderCategoryAccordionList(categories) {
 
     const descSmall = document.createElement('small');
     descSmall.className = 'category-item__desc muted';
-    const lessonCount = Array.isArray(cat.lessons) ? cat.lessons.length : 0;
-    descSmall.textContent = cat.description
-      ? `${cat.description} (${lessonCount} bài)`
-      : `Gồm ${lessonCount} bài luyện tập`;
+
+    const validChapters = Array.isArray(cat.chapters)
+      ? cat.chapters.filter((ch) => Array.isArray(ch.lessons) && ch.lessons.length > 0)
+      : [];
+
+    if (validChapters.length > 0) {
+      const totalLes = validChapters.reduce((sum, ch) => sum + ch.lessons.length, 0);
+      descSmall.textContent = cat.description
+        ? `${cat.description} (${validChapters.length} chương · ${totalLes} bài)`
+        : `Gồm ${validChapters.length} chương · ${totalLes} bài luyện tập`;
+    } else {
+      const lessonCount = Array.isArray(cat.lessons) ? cat.lessons.length : 0;
+      descSmall.textContent = cat.description
+        ? `${cat.description} (${lessonCount} bài)`
+        : `Gồm ${lessonCount} bài luyện tập`;
+    }
 
     infoSpan.appendChild(titleStrong);
     infoSpan.appendChild(descSmall);
@@ -673,45 +750,68 @@ function renderCategoryAccordionList(categories) {
     const lessonsWrap = document.createElement('div');
     lessonsWrap.className = 'category-item__lessons';
 
-    const lessons = Array.isArray(cat.lessons) && cat.lessons.length > 0
-      ? cat.lessons
-      : [
-          { id: 'bai-1', name: 'Bài 1', questions: [] },
-          { id: 'bai-2', name: 'Bài 2', questions: [] },
-        ];
+    if (validChapters.length > 0) {
+      validChapters.forEach((ch, chIdx) => {
+        const chItem = document.createElement('div');
+        const chOpen = chIdx === 0;
+        chItem.className = `chapter-item${chOpen ? ' is-open' : ''}`;
+        chItem.dataset.chapterId = ch.id;
 
-    lessons.forEach((les) => {
-      const lesBtn = document.createElement('button');
-      lesBtn.type = 'button';
-      lesBtn.className = 'lesson-btn';
-      lesBtn.setAttribute('data-category-id', cat.id);
-      lesBtn.setAttribute('data-category-name', cat.name);
-      lesBtn.setAttribute('data-lesson-id', les.id);
-      lesBtn.setAttribute('data-lesson-name', `${cat.name} · ${les.name}`);
+        const chHeader = document.createElement('button');
+        chHeader.type = 'button';
+        chHeader.className = 'chapter-item__header';
+        chHeader.setAttribute('aria-expanded', chOpen ? 'true' : 'false');
 
-      const nameSpan = document.createElement('span');
-      nameSpan.className = 'lesson-btn__name';
-      nameSpan.textContent = les.name;
+        const chIcon = document.createElement('span');
+        chIcon.className = 'chapter-item__icon';
+        chIcon.setAttribute('aria-hidden', 'true');
+        chIcon.textContent = '📖';
 
-      const metaSpan = document.createElement('span');
-      metaSpan.className = 'lesson-btn__meta';
+        const chInfo = document.createElement('span');
+        chInfo.className = 'chapter-item__info';
 
-      const qCount = Array.isArray(les.questions) ? les.questions.length : 0;
-      const badge = document.createElement('span');
-      badge.className = 'badge badge--info';
-      badge.textContent = `${qCount} câu`;
+        const chTitle = document.createElement('strong');
+        chTitle.className = 'chapter-item__title';
+        chTitle.textContent = ch.name;
 
-      const arrow = document.createElement('span');
-      arrow.className = 'muted';
-      arrow.textContent = '›';
+        const chDesc = document.createElement('small');
+        chDesc.className = 'chapter-item__desc muted';
+        const chLessonCount = ch.lessons.length;
+        const chQuestionCount = ch.lessons.reduce(
+          (sum, l) => sum + (Array.isArray(l.questions) ? l.questions.length : 0),
+          0
+        );
+        chDesc.textContent = `${chLessonCount} bài · ${chQuestionCount} câu hỏi`;
 
-      metaSpan.appendChild(badge);
-      metaSpan.appendChild(arrow);
+        chInfo.appendChild(chTitle);
+        chInfo.appendChild(chDesc);
 
-      lesBtn.appendChild(nameSpan);
-      lesBtn.appendChild(metaSpan);
-      lessonsWrap.appendChild(lesBtn);
-    });
+        const chChevron = document.createElement('span');
+        chChevron.className = 'chapter-item__chevron';
+        chChevron.setAttribute('aria-hidden', 'true');
+        chChevron.textContent = '▾';
+
+        chHeader.appendChild(chIcon);
+        chHeader.appendChild(chInfo);
+        chHeader.appendChild(chChevron);
+
+        const chLessonsWrap = document.createElement('div');
+        chLessonsWrap.className = 'chapter-item__lessons';
+
+        ch.lessons.forEach((les) => {
+          chLessonsWrap.appendChild(createLessonButton(cat, les, ch));
+        });
+
+        chItem.appendChild(chHeader);
+        chItem.appendChild(chLessonsWrap);
+        lessonsWrap.appendChild(chItem);
+      });
+    } else {
+      const lessons = Array.isArray(cat.lessons) ? cat.lessons : [];
+      lessons.forEach((les) => {
+        lessonsWrap.appendChild(createLessonButton(cat, les, null));
+      });
+    }
 
     item.appendChild(headerBtn);
     item.appendChild(lessonsWrap);
@@ -765,7 +865,7 @@ async function populateStep3Config(subject) {
 async function updateStep3BreakdownAndPreview() {
   const infoEl = document.getElementById('question-count-info');
   const startBtn = /** @type {HTMLButtonElement} */ (document.getElementById('btn-start'));
-  const { subjectId, source, categoryId, lessonId, lessonName, parts } = getState('selection');
+  const { subjectId, source, categoryId, chapterId, lessonId, lessonName, parts } = getState('selection');
   const subject = getSubjectById(subjectId);
 
   if (!subject) {
@@ -774,7 +874,7 @@ async function updateStep3BreakdownAndPreview() {
     return;
   }
 
-  const breakdown = await getQuestionBreakdown(subjectId, source, { categoryId, lessonId });
+  const breakdown = await getQuestionBreakdown(subjectId, source, { categoryId, chapterId, lessonId });
   const srcLabel = lessonName || SOURCE_LABELS[source] || 'Đề trường';
 
   if (!breakdown) {
