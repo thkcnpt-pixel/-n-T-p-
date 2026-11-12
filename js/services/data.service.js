@@ -39,6 +39,22 @@ export const DEFAULT_TOAN_NGOAI_CATEGORIES = Object.freeze([
     description: 'Các đề ôn tập tổng hợp kiến thức Giải tích & Hình học',
     chapters: [
       {
+        id: 'chuong_2',
+        name: 'Chương 2: Nguyên hàm – Tích phân và ứng dụng',
+        lessons: [
+          { id: 'bai_01', name: 'Bài 01: Ứng dụng tích phân trong thực tế - Phần 1', questions: [] },
+          { id: 'bai_02', name: 'Bài 02: Ứng dụng tích phân trong thực tế - Phần 2', questions: [] },
+          { id: 'bai_03', name: 'Bài 03: Mô hình tích phân trong bài toán chuyển động', questions: [] },
+          { id: 'bai_04', name: 'Bài 04: Mô hình vi phân trong thực tế', questions: [] },
+          { id: 'bai_05', name: 'Bài 05: Diện tích hình thang cong - Phần 1', questions: [] },
+          { id: 'bai_06', name: 'Bài 06: Diện tích hình thang cong - Phần 2', questions: [] },
+          { id: 'bai_07', name: 'Bài 07: Thể tích của khối tròn xoay - Phần 1', questions: [] },
+          { id: 'bai_08', name: 'Bài 08: Thể tích của khối tròn xoay - Phần 2', questions: [] },
+          { id: 'bai_09', name: 'Bài 09: Thể tích của một vật thể', questions: [] },
+          { id: 'bai_10', name: 'Bài 10: Một số dạng tích phân khác', questions: [] },
+        ],
+      },
+      {
         id: 'chuong_5',
         name: 'Chương 5: Phương pháp tọa độ trong không gian',
         lessons: [

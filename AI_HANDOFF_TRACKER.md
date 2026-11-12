@@ -33,6 +33,21 @@
 Đã thiết lập cấu trúc phân cấp **3 tầng (Chuyên đề → Chương → Bài)** cho nhánh **Tổng hợp** và **2 tầng (Chuyên đề → Bài)** cho nhánh **Xác suất**, đồng bộ hoàn tất lên cả Google Drive và GitHub repo:
 
 - **Chuyên đề 1: Tổng hợp (`tonghop`)**
+  - **Chương 2: Nguyên hàm – Tích phân và ứng dụng (`chuong_2`)** — **10 bài / 413 câu hỏi / 185 ảnh minh họa**:
+    - Drive JSON folder: `https://drive.google.com/drive/folders/1XmzDWEcDwUKUssFyw-kSih5jXMVo0pZg` (`Wed ôn tập/toan/de-ngoai/tong-hop/chuong-2`)
+    - Drive Images folder: `https://drive.google.com/drive/folders/1i-SRGp0YwmYr5YHRJc4_aiYwXBqWZGs7`
+    - GitHub Images dir: `assets/images/toan/ngoai/tong-hop/chuong-2/bai_01..bai_10/`
+    - Chi tiết 10 bài đã xong 100%:
+      1. `bai_01.json` — Bài 01: Ứng dụng tích phân trong thực tế - Phần 1 *(55 câu, 9 ảnh)*
+      2. `bai_02.json` — Bài 02: Ứng dụng tích phân trong thực tế - Phần 2 *(53 câu, 6 ảnh)*
+      3. `bai_03.json` — Bài 03: Mô hình tích phân trong bài toán chuyển động *(60 câu, 23 ảnh)*
+      4. `bai_04.json` — Bài 04: Mô hình vi phân trong thực tế *(34 câu, 10 ảnh)*
+      5. `bai_05.json` — Bài 05: Diện tích hình thang cong - Phần 1 *(35 câu, 31 ảnh)*
+      6. `bai_06.json` — Bài 06: Diện tích hình thang cong - Phần 2 *(36 câu, 30 ảnh)*
+      7. `bai_07.json` — Bài 07: Thể tích của khối tròn xoay - Phần 1 *(39 câu, 24 ảnh)*
+      8. `bai_08.json` — Bài 08: Thể tích của khối tròn xoay - Phần 2 *(33 câu, 29 ảnh)*
+      9. `bai_09.json` — Bài 09: Thể tích của một vật thể *(23 câu, 18 ảnh)*
+      10. `bai_10.json` — Bài 10: Một số dạng tích phân khác *(45 câu, 5 ảnh)*
   - **Chương 5: Phương pháp tọa độ trong không gian (`chuong_5`)** — **10 bài / 333 câu hỏi / 58 ảnh minh họa**:
     - Drive JSON folder: `https://drive.google.com/drive/folders/1sjzTI-jo6GP9fKD1njO0vTTE1T-8YU4H` (`Wed ôn tập/toan/de-ngoai/tong-hop/chuong-5`)
     - Drive Images folder: `https://drive.google.com/drive/folders/1F3ecrYeVWK85335v_iGNheRCMTELN_PA`
@@ -91,7 +106,7 @@
 # PENDING TASKS (NƠI DỪNG LẠI)
 
 1. **Đồng bộ từ Google Drive lên Web App (GitHub Repo)**:
-   - Toàn bộ dữ liệu JSON và hình ảnh đã có trên Google Drive tính đến thời điểm hiện tại (**Toán Đề ngoài Chương 5, Chương 6, Xác suất** và **10 trường Tin học Đề ngoài**) **ĐÃ ĐƯỢC ĐỒNG BỘ 100% LÊN WEB** (`CACHE_VERSION = 'thkc-quiz-v1.8.0'`). Không còn câu hỏi nào đang nạp dở dang giữa Drive và Web.
+   - Toàn bộ dữ liệu JSON và hình ảnh đã có trên Google Drive tính đến thời điểm hiện tại (**Toán Đề ngoài Chương 2, Chương 5, Chương 6, Xác suất** và **10 trường Tin học Đề ngoài**) **ĐÃ ĐƯỢC ĐỒNG BỘ 100% LÊN WEB** (`CACHE_VERSION = 'thkc-quiz-v1.9.0'`). Không còn câu hỏi nào đang nạp dở dang giữa Drive và Web.
 
 2. **Các đề gốc (Word/PDF) còn lại trên Google Drive chờ bóc tách sang JSON (nếu tiếp tục bóc tách đề)**:
    - **Môn Tin học — Đề ngoài** (Thư mục file gốc `tin học` trên Drive — ID: `1nsSzoxfAO9pff-iDJA-R_krlpnRbsAfg` hiện có 15 file gốc, đã xong 10 trường ở mục Completed, còn **5 trường chưa có thư mục JSON trong `Wed ôn tập/tinhoc/de-ngoai/`**, bắt đầu từ **Câu 1** của từng đề):
@@ -101,7 +116,7 @@
      4. `THPT PHAN ĐÌNH PHÙNG - HN-ĐA.docx` (File ID: `1xdxNI9ULsgNFPoj3-IuEQwI23dm5_ldL`) — cần bóc từ **Câu 1**.
      5. `THPT Tân Sơn - Phú Thọ - Đáp án.docx` (File ID: `1w_pcXzCy2Ia6dsYSQnTVciv8VPn-KG2r`) — cần bóc từ **Câu 1**.
    - **Môn Toán — Đề ngoài — Tổng hợp (`Wed ôn tập/toan/de-ngoai/tong-hop/`)**:
-     - `chuong-1` đến `chuong-4`: Hiện thư mục trên Drive đang trống, chờ bổ sung file JSON các bài học (nếu có). Khi có thêm chương mới trên Drive, chỉ cần gộp vào mảng `categories[0].chapters` trong `data/toan-ngoai.json` và `DEFAULT_TOAN_NGOAI_CATEGORIES` trong `js/services/data.service.js` (UI Accordion 3 tầng sẽ tự động hiển thị các chương có bài học).
+     - `chuong-1`, `chuong-3`, `chuong-4`: Hiện thư mục trên Drive đang trống, chờ bổ sung file JSON các bài học (nếu có). Khi có thêm chương mới trên Drive, chỉ cần gộp vào mảng `categories[0].chapters` trong `data/toan-ngoai.json` và `DEFAULT_TOAN_NGOAI_CATEGORIES` trong `js/services/data.service.js` (UI Accordion 3 tầng sẽ tự động hiển thị các chương có bài học).
 
 ---
 
@@ -109,8 +124,10 @@
 
 ### 1. Google Drive ("Wed ôn tập")
 - **Thư mục gốc dự án (`Wed ôn tập`)**: `https://drive.google.com/drive/folders/1gUp_g_VJU38zcrOuLQeCRA0942Fb4D6v` (Folder ID: `1gUp_g_VJU38zcrOuLQeCRA0942Fb4D6v`)
+  - **File tracker bàn giao trên Drive**: `AI_HANDOFF_TRACKER.md` (File ID: `1rDB8hjaS1AUbZbsFrz0gPd9zSaJCyEY5`)
   - **File hướng dẫn chuẩn**: `README.txt` (File ID: `1hMBfEc6cyiYu7ZtsdJrUVVTpU0q2f_Pp`)
   - **Toán (`toan`)**: Folder ID `17kyKcPR0H3V3gJprzy0hplzd3_1rxG1b`
+    - `toan/de-ngoai/tong-hop/chuong-2`: Folder ID `1XmzDWEcDwUKUssFyw-kSih5jXMVo0pZg`
     - `toan/de-ngoai/tong-hop/chuong-5`: Folder ID `1sjzTI-jo6GP9fKD1njO0vTTE1T-8YU4H`
     - `toan/de-ngoai/tong-hop/chuong-6`: Folder ID `1i2zU7ctCvMto3DU2bCzgM_IBkXUSdHYj`
   - **Tin học (`tinhoc`)**: Folder ID `1f4rOPslr84ITpvEH9oA9z2Ak0xsZAs6O`
