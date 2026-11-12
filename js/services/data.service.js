@@ -87,6 +87,31 @@ export const DEFAULT_TOAN_NGOAI_CATEGORIES = Object.freeze([
 ]);
 
 /**
+ * Cấu trúc danh mục mặc định cho Tin học > Đề ngoài (phân loại theo từng trường THPT).
+ */
+export const DEFAULT_TINHOC_NGOAI_CATEGORIES = Object.freeze([
+  {
+    id: 'de_cac_truong',
+    name: 'Đề thi theo trường',
+    icon: '🏫',
+    description: 'Đề thi thử & đề ôn tập Tin học phân loại theo từng trường THPT',
+    chapters: [],
+    lessons: [
+      { id: 'cum-chuyen-mon-so-3-dak-lak', name: 'Cụm chuyên môn số 3 – Đắk Lắk', questions: [] },
+      { id: 'thpt-binh-khanh', name: 'THPT Bình Khánh', questions: [] },
+      { id: 'thpt-chuyen-hung-vuong', name: 'THPT Chuyên Hùng Vương', questions: [] },
+      { id: 'thpt-chuyen-luong-van-chanh', name: 'THPT Chuyên Lương Văn Chánh – Phú Yên', questions: [] },
+      { id: 'thpt-ly-son', name: 'THPT Lý Sơn – Quảng Ngãi', questions: [] },
+      { id: 'thpt-phan-boi-chau', name: 'THPT Phan Bội Châu – Phú Yên', questions: [] },
+      { id: 'thpt-tam-phuoc', name: 'THPT Tam Phước', questions: [] },
+      { id: 'thpt-thanh-my-tay', name: 'THPT Thạnh Mỹ Tây – An Giang', questions: [] },
+      { id: 'thpt-tran-van-quan', name: 'THPT Trần Văn Quan – Vũng Tàu', questions: [] },
+      { id: 'thpt-van-quan', name: 'THPT Văn Quán – Vĩnh Phúc', questions: [] },
+    ],
+  },
+]);
+
+/**
  * Cache theo file:
  * "toan-truong" -> { kind: 'flat', questions: Question[], categories: [] }
  * "toan-ngoai"  -> { kind: 'nested', questions: Question[], categories: CategoryNode[] }
@@ -194,24 +219,22 @@ export function getSubjectById(id) {
 }
 
 /**
- * Kiểm tra tổ hợp Môn + Nguồn đề có sử dụng màn hình phân nhánh Chuyên đề -> Bài nhỏ hay không.
- * Theo đặc tả: **Toán > Đề ngoài** bắt buộc chuyển qua màn chọn "Tổng hợp" / "Xác suất" -> Bài nhỏ.
+ * Kiểm tra tổ hợp Môn + Nguồn đề có sử dụng màn hình phân nhánh Chuyên đề / Trường -> Bài nhỏ hay không.
+ * Theo đặc tả: **Toán > Đề ngoài** và **Tin học > Đề ngoài** chuyển qua màn hình 2b.
  * @param {string} subjectId
  * @param {string} source
  * @returns {boolean}
  */
 export function requiresCategoryStep(subjectId, source) {
-  return subjectId === 'toan' && source === SOURCES.NGOAI;
+  return (subjectId === 'toan' || subjectId === 'tinhoc') && source === SOURCES.NGOAI;
 }
 
 /* --------------------------------------------------------------------------
-   Truy xuất Danh mục Chuyên đề & Bài nhỏ (dành cho Toán > Đề ngoài)
+   Truy xuất Danh mục Chuyên đề & Bài nhỏ (dành cho Toán / Tin học > Đề ngoài)
    -------------------------------------------------------------------------- */
 
 /**
- * Lấy danh sách Chuyên đề (Tổng hợp, Xác suất) và các Bài nhỏ bên trong.
- * LUÔN trả về ít nhất 2 danh mục "Tổng hợp" và "Xác suất" (không bao giờ trả mảng rỗng)
- * để tránh lỗi ẩn mất giao diện khi chưa tải được câu hỏi.
+ * Lấy danh sách Chuyên đề / Trường và các Bài nhỏ bên trong.
  * @param {string} subjectId
  * @param {'truong'|'ngoai'} source
  * @returns {Promise<CategoryNode[]>}
@@ -229,6 +252,9 @@ export async function loadNestedCategories(subjectId, source) {
 
   if (subjectId === 'toan' && source === SOURCES.NGOAI) {
     return structuredClone(DEFAULT_TOAN_NGOAI_CATEGORIES);
+  }
+  if (subjectId === 'tinhoc' && source === SOURCES.NGOAI) {
+    return structuredClone(DEFAULT_TINHOC_NGOAI_CATEGORIES);
   }
   return [];
 }

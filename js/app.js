@@ -57,6 +57,7 @@ import {
   requiresCategoryStep,
   loadNestedCategories,
   DEFAULT_TOAN_NGOAI_CATEGORIES,
+  DEFAULT_TINHOC_NGOAI_CATEGORIES,
 } from './services/data.service.js';
 
 import {
@@ -606,6 +607,10 @@ async function populateStep2Sources(subject) {
       ngoaiInfo.textContent = cNgoai !== null
         ? `Chuyên đề Tổng hợp & Xác suất · Hiện có ${cNgoai} câu`
         : 'Chuyên đề Tổng hợp & Xác suất (Chọn bài nhỏ)';
+    } else if (subject.id === 'tinhoc') {
+      ngoaiInfo.textContent = cNgoai !== null
+        ? `Phân loại theo từng trường THPT · Hiện có ${cNgoai} câu`
+        : 'Đề thi thử phân loại theo từng trường THPT';
     } else {
       ngoaiInfo.textContent = cNgoai !== null
         ? (cNgoai > 0 ? `Đề mở rộng · Hiện có ${cNgoai} câu` : 'Đề mở rộng · Chưa có câu hỏi (0 câu)')
@@ -615,7 +620,7 @@ async function populateStep2Sources(subject) {
 }
 
 /**
- * Cập nhật giao diện Màn hình trung gian 2b (Toán > Đề ngoài: Chuyên đề "Tổng hợp" & "Xác suất" -> Chương -> Bài nhỏ).
+ * Cập nhật giao diện Màn hình trung gian 2b (Toán / Tin học > Đề ngoài: Chuyên đề / Trường -> Chương -> Bài nhỏ).
  * Luôn hiển thị ngay lập tức bộ khung mặc định trước, sau đó mới cập nhật dữ liệu thực tế từ JSON.
  * @param {{id: string, name: string, icon: string, sources: string[]}} subject
  */
@@ -623,10 +628,14 @@ async function populateStep2bCategories(subject) {
   const badgeEl = document.getElementById('step2b-subject-badge');
   if (badgeEl) badgeEl.textContent = `${subject.icon} ${subject.name}`;
 
-  // 1) Hiển thị ngay lập tức 2 danh mục Tổng hợp & Xác suất để UI không bao giờ bị trống/ẩn
-  renderCategoryAccordionList(DEFAULT_TOAN_NGOAI_CATEGORIES);
+  const fallbackCats = subject.id === 'tinhoc'
+    ? DEFAULT_TINHOC_NGOAI_CATEGORIES
+    : DEFAULT_TOAN_NGOAI_CATEGORIES;
 
-  // 2) Tải dữ liệu lồng nhau từ data/toan-ngoai.json và cập nhật số lượng câu của từng bài nhỏ
+  // 1) Hiển thị ngay lập tức bộ khung mặc định để UI không bao giờ bị trống/ẩn
+  renderCategoryAccordionList(fallbackCats);
+
+  // 2) Tải dữ liệu lồng nhau từ JSON và cập nhật số lượng câu của từng bài/trường
   const categories = await loadNestedCategories(subject.id, SOURCES.NGOAI);
   if (categories && categories.length > 0) {
     renderCategoryAccordionList(categories);
