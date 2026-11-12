@@ -317,72 +317,74 @@
             </p>
           </section>
 
-          <!-- Cấu hình & Tùy chỉnh trực tiếp ngay tại Bước 3 -->
-          <section class="panel" aria-labelledby="h-inline-settings">
+          <!-- Cấu hình & Tùy chỉnh trực tiếp ngay tại Bước 3 (Thu gọn tối đa mặc định, chỉ hiện khi bấm Mở rộng) -->
+          <section id="step3-settings-panel" class="panel panel--compact" aria-labelledby="h-inline-settings">
             <div class="panel__head">
               <h2 id="h-inline-settings" class="panel__title">⚙️ Tùy chỉnh làm bài</h2>
-              <button type="button" class="btn btn--ghost btn--sm" data-action="open-settings">Mở rộng</button>
+              <button type="button" id="btn-toggle-step3-settings" class="btn btn--ghost btn--sm" aria-expanded="false" aria-controls="step3-settings-body">Mở rộng ▾</button>
             </div>
 
-            <div class="form__group">
-              <label for="step3-time" class="form__label">
-                Thời gian làm bài: <strong><output id="step3-time-output" for="step3-time">15</output> phút</strong>
+            <div id="step3-settings-body" class="step3-settings-body" hidden>
+              <div class="form__group">
+                <label for="step3-time" class="form__label">
+                  Thời gian làm bài: <strong><output id="step3-time-output" for="step3-time">15</output> phút</strong>
+                </label>
+                <input type="range" id="step3-time" min="0" max="120" step="5" value="15" class="range" />
+                <p class="form__hint">Kéo về 0 để làm bài không giới hạn thời gian.</p>
+              </div>
+
+              <div class="inline-settings-grid">
+                <div class="fieldset">
+                  <span class="form__label">Chế độ hiển thị</span>
+                  <div class="segmented">
+                    <label class="segmented__item">
+                      <input type="radio" name="step3ViewMode" value="scroll" checked />
+                      <span>Cuộn toàn bộ</span>
+                    </label>
+                    <label class="segmented__item">
+                      <input type="radio" name="step3ViewMode" value="single" />
+                      <span>Từng câu</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="fieldset">
+                  <span class="form__label">Xem lời giải</span>
+                  <div class="segmented">
+                    <label class="segmented__item">
+                      <input type="radio" name="step3ExplainMode" value="instant" />
+                      <span>Ngay khi sai</span>
+                    </label>
+                    <label class="segmented__item">
+                      <input type="radio" name="step3ExplainMode" value="after" checked />
+                      <span>Sau khi nộp</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <label class="setting-row">
+                <span>
+                  <strong>Xáo trộn câu hỏi</strong>
+                  <small class="muted">Đổi thứ tự câu mỗi lần làm</small>
+                </span>
+                <span class="switch">
+                  <input type="checkbox" id="step3-shuffle-q" role="switch" />
+                  <span class="switch__track"><span class="switch__thumb"></span></span>
+                </span>
               </label>
-              <input type="range" id="step3-time" min="0" max="120" step="5" value="15" class="range" />
-              <p class="form__hint">Kéo về 0 để làm bài không giới hạn thời gian.</p>
+
+              <label class="setting-row" style="border-bottom: none; padding-bottom: 0;">
+                <span>
+                  <strong>Xáo trộn đáp án</strong>
+                  <small class="muted">Giữ nguyên vị trí đáp án có "shuffle": false</small>
+                </span>
+                <span class="switch">
+                  <input type="checkbox" id="step3-shuffle-o" role="switch" />
+                  <span class="switch__track"><span class="switch__thumb"></span></span>
+                </span>
+              </label>
             </div>
-
-            <div class="inline-settings-grid">
-              <div class="fieldset">
-                <span class="form__label">Chế độ hiển thị</span>
-                <div class="segmented">
-                  <label class="segmented__item">
-                    <input type="radio" name="step3ViewMode" value="scroll" checked />
-                    <span>Cuộn toàn bộ</span>
-                  </label>
-                  <label class="segmented__item">
-                    <input type="radio" name="step3ViewMode" value="single" />
-                    <span>Từng câu</span>
-                  </label>
-                </div>
-              </div>
-
-              <div class="fieldset">
-                <span class="form__label">Xem lời giải</span>
-                <div class="segmented">
-                  <label class="segmented__item">
-                    <input type="radio" name="step3ExplainMode" value="instant" />
-                    <span>Ngay khi sai</span>
-                  </label>
-                  <label class="segmented__item">
-                    <input type="radio" name="step3ExplainMode" value="after" checked />
-                    <span>Sau khi nộp</span>
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <label class="setting-row">
-              <span>
-                <strong>Xáo trộn câu hỏi</strong>
-                <small class="muted">Đổi thứ tự câu mỗi lần làm</small>
-              </span>
-              <span class="switch">
-                <input type="checkbox" id="step3-shuffle-q" role="switch" />
-                <span class="switch__track"><span class="switch__thumb"></span></span>
-              </span>
-            </label>
-
-            <label class="setting-row" style="border-bottom: none; padding-bottom: 0;">
-              <span>
-                <strong>Xáo trộn đáp án</strong>
-                <small class="muted">Giữ nguyên vị trí đáp án có "shuffle": false</small>
-              </span>
-              <span class="switch">
-                <input type="checkbox" id="step3-shuffle-o" role="switch" />
-                <span class="switch__track"><span class="switch__thumb"></span></span>
-              </span>
-            </label>
 
             <ul id="settings-summary" class="chip-list" hidden></ul>
           </section>

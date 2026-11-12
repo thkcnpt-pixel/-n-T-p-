@@ -863,6 +863,15 @@ async function populateStep3Config(subject) {
     }
   }
 
+  // Mặc định thu gọn khung Tùy chỉnh làm bài để tiết kiệm diện tích
+  const settingsBody = document.getElementById('step3-settings-body');
+  const toggleSettingsBtn = document.getElementById('btn-toggle-step3-settings');
+  if (settingsBody) settingsBody.hidden = true;
+  if (toggleSettingsBtn) {
+    toggleSettingsBtn.setAttribute('aria-expanded', 'false');
+    toggleSettingsBtn.textContent = 'Mở rộng ▾';
+  }
+
   syncStep3InlineSettingsUI();
   await updateStep3BreakdownAndPreview();
 }

@@ -101,10 +101,20 @@ export function initSettingsModal({ toast } = {}) {
  * xem giải thích, xáo trộn câu/đáp án) và tự động lưu lên tài khoản.
  */
 function bindStep3InlineSettings() {
+  const toggleBtn = /** @type {HTMLButtonElement|null} */ (document.getElementById('btn-toggle-step3-settings'));
+  const bodyEl = /** @type {HTMLElement|null} */ (document.getElementById('step3-settings-body'));
   const s3Time = /** @type {HTMLInputElement} */ (document.getElementById('step3-time'));
   const s3TimeOut = /** @type {HTMLOutputElement} */ (document.getElementById('step3-time-output'));
   const s3ShuffleQ = /** @type {HTMLInputElement} */ (document.getElementById('step3-shuffle-q'));
   const s3ShuffleO = /** @type {HTMLInputElement} */ (document.getElementById('step3-shuffle-o'));
+
+  toggleBtn?.addEventListener('click', () => {
+    if (!bodyEl) return;
+    const willOpen = bodyEl.hidden;
+    bodyEl.hidden = !willOpen;
+    toggleBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+    toggleBtn.textContent = willOpen ? 'Thu gọn ▴' : 'Mở rộng ▾';
+  });
 
   s3Time?.addEventListener('input', () => {
     updateTimeLabel(Number(s3Time.value), s3TimeOut);
