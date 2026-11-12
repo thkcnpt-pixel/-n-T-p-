@@ -55,6 +55,20 @@ export const DEFAULT_TOAN_NGOAI_CATEGORIES = Object.freeze([
         ],
       },
       {
+        id: 'chuong_3',
+        name: 'Chương 3: Tổ hợp – Xác suất',
+        lessons: [
+          { id: 'bai_01', name: 'Bài 01: Bài toán đếm tư duy - Phần 1', questions: [] },
+          { id: 'bai_02', name: 'Bài 02: Bài toán đếm tư duy - Phần 2', questions: [] },
+          { id: 'bai_03', name: 'Bài 03: Xác suất trong bài toán đếm', questions: [] },
+          { id: 'bai_04', name: 'Bài 04: Xác suất trò chơi', questions: [] },
+          { id: 'bai_05', name: 'Bài 05: Phép cộng và phép nhân xác suất', questions: [] },
+          { id: 'bai_06', name: 'Bài 06: Bài toán chia kẹo Euler và công thức Bernoulli', questions: [] },
+          { id: 'bai_07', name: 'Bài 07: Xác suất có điều kiện và công thức Bayes - Phần 1', questions: [] },
+          { id: 'bai_08', name: 'Bài 08: Xác suất có điều kiện và công thức Bayes - Phần 2', questions: [] },
+        ],
+      },
+      {
         id: 'chuong_5',
         name: 'Chương 5: Phương pháp tọa độ trong không gian',
         lessons: [
