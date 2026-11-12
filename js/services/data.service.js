@@ -39,6 +39,22 @@ export const DEFAULT_TOAN_NGOAI_CATEGORIES = Object.freeze([
     description: 'Các đề ôn tập tổng hợp kiến thức Giải tích & Hình học',
     chapters: [
       {
+        id: 'chuong_5',
+        name: 'Chương 5: Phương pháp tọa độ trong không gian',
+        lessons: [
+          { id: 'bai_01', name: 'Bài 01: Một số bài toán vectơ thường gặp', questions: [] },
+          { id: 'bai_02', name: 'Bài 02: Mô hình vectơ trong không gian', questions: [] },
+          { id: 'bai_03', name: 'Bài 03: Mô hình vectơ trong không gian có yếu tố cực trị', questions: [] },
+          { id: 'bai_04', name: 'Bài 04: Viết phương trình mặt cầu', questions: [] },
+          { id: 'bai_05', name: 'Bài 05: Viết phương trình mặt phẳng', questions: [] },
+          { id: 'bai_06', name: 'Bài 06: Viết phương trình đường thẳng', questions: [] },
+          { id: 'bai_07', name: 'Bài 07: Mô hình đường thẳng – mặt phẳng – mặt cầu trong hệ Oxyz', questions: [] },
+          { id: 'bai_08', name: 'Bài 08: Bài toán cực trị Oxyz – Phần 1', questions: [] },
+          { id: 'bai_09', name: 'Bài 09: Bài toán cực trị Oxyz – Phần 2', questions: [] },
+          { id: 'bai_10', name: 'Bài 10: Mô hình Oxyz có yếu tố cực trị', questions: [] },
+        ],
+      },
+      {
         id: 'chuong_6',
         name: 'Chương 6: Góc, khoảng cách và thể tích không gian',
         lessons: [
