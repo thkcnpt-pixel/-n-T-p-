@@ -39,6 +39,20 @@ export const DEFAULT_TOAN_NGOAI_CATEGORIES = Object.freeze([
     description: 'Các đề ôn tập tổng hợp kiến thức Giải tích & Hình học',
     chapters: [
       {
+        id: 'chuong_1',
+        name: 'Chương 1: Ứng dụng đạo hàm để khảo sát hàm số',
+        lessons: [
+          { id: 'bai_01', name: 'Bài 01: Mô hình hàm số bậc nhất và hàm bậc hai', questions: [] },
+          { id: 'bai_02', name: 'Bài 02: Mô hình hàm số bậc ba', questions: [] },
+          { id: 'bai_03', name: 'Bài 03: Mô hình hàm phân thức', questions: [] },
+          { id: 'bai_04', name: 'Bài 04: Mô hình hàm số lượng giác', questions: [] },
+          { id: 'bai_05', name: 'Bài 05: Mô hình hàm số mũ và logarit', questions: [] },
+          { id: 'bai_06', name: 'Bài 06: Mô hình đường tròn - elip - hypebol - parabol', questions: [] },
+          { id: 'bai_07', name: 'Bài 07: Ý nghĩa cơ học của đạo hàm', questions: [] },
+          { id: 'bai_08', name: 'Bài 08: Một số dạng toán tổng hợp', questions: [] },
+        ],
+      },
+      {
         id: 'chuong_2',
         name: 'Chương 2: Nguyên hàm – Tích phân và ứng dụng',
         lessons: [
@@ -66,6 +80,17 @@ export const DEFAULT_TOAN_NGOAI_CATEGORIES = Object.freeze([
           { id: 'bai_06', name: 'Bài 06: Bài toán chia kẹo Euler và công thức Bernoulli', questions: [] },
           { id: 'bai_07', name: 'Bài 07: Xác suất có điều kiện và công thức Bayes - Phần 1', questions: [] },
           { id: 'bai_08', name: 'Bài 08: Xác suất có điều kiện và công thức Bayes - Phần 2', questions: [] },
+        ],
+      },
+      {
+        id: 'chuong_4',
+        name: 'Chương 4: Hệ phương trình, lý thuyết đồ thị, dãy số và tài chính',
+        lessons: [
+          { id: 'bai_01', name: 'Bài 01: Quy hoạch tuyến tính', questions: [] },
+          { id: 'bai_02', name: 'Bài 02: Ứng dụng hệ phương trình, hệ bất phương trình', questions: [] },
+          { id: 'bai_03', name: 'Bài 03: Ứng dụng của lý thuyết đồ thị', questions: [] },
+          { id: 'bai_04', name: 'Bài 04: Dãy số - Cấp số cộng - Cấp số nhân và giới hạn', questions: [] },
+          { id: 'bai_05', name: 'Bài 05: Ứng dụng toán học trong tài chính', questions: [] },
         ],
       },
       {

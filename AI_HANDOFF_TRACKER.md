@@ -32,7 +32,20 @@
 ### 1. Môn Toán — Đề ngoài (`data/toan-ngoai.json`)
 Đã thiết lập cấu trúc phân cấp **3 tầng (Chuyên đề → Chương → Bài)** cho nhánh **Tổng hợp** và **2 tầng (Chuyên đề → Bài)** cho nhánh **Xác suất**, đồng bộ hoàn tất lên cả Google Drive và GitHub repo:
 
-- **Chuyên đề 1: Tổng hợp (`tonghop`)**
+- **Chuyên đề 1: Tổng hợp (`tonghop`)** — **ĐÃ HOÀN THÀNH ĐẦY ĐỦ 6 CHƯƠNG (Chương 1 → Chương 6: 47 bài / 1.957 câu hỏi / 566 ảnh minh họa)**:
+  - **Chương 1: Ứng dụng đạo hàm để khảo sát hàm số (`chuong_1`)** — **8 bài / 459 câu hỏi / 180 ảnh minh họa**:
+    - Drive JSON folder: `https://drive.google.com/drive/folders/1osB1IUCWnK47Ju3eeZGS3L7pnx-XTuAe` (`Wed ôn tập/toan/de-ngoai/tong-hop/chuong-1`)
+    - Drive Images folder: `https://drive.google.com/drive/folders/1oXKM3i_VCu0wVAPJGIvWlVjwNU7NB98c`
+    - GitHub Images dir: `assets/images/toan/ngoai/tong-hop/chuong-1/bai_01..bai_08/`
+    - Chi tiết 8 bài đã xong 100%:
+      1. `bai_01.json` — Bài 01: Mô hình hàm số bậc nhất và hàm bậc hai *(88 câu, 25 ảnh)*
+      2. `bai_02.json` — Bài 02: Mô hình hàm số bậc ba *(86 câu, 30 ảnh)*
+      3. `bai_03.json` — Bài 03: Mô hình hàm phân thức *(56 câu, 16 ảnh)*
+      4. `bai_04.json` — Bài 04: Mô hình hàm số lượng giác *(46 câu, 28 ảnh)*
+      5. `bai_05.json` — Bài 05: Mô hình hàm số mũ và logarit *(49 câu, 10 ảnh)*
+      6. `bai_06.json` — Bài 06: Mô hình đường tròn - elip - hypebol - parabol *(29 câu, 26 ảnh)*
+      7. `bai_07.json` — Bài 07: Ý nghĩa cơ học của đạo hàm *(79 câu, 29 ảnh)*
+      8. `bai_08.json` — Bài 08: Một số dạng toán tổng hợp *(26 câu, 16 ảnh)*
   - **Chương 2: Nguyên hàm – Tích phân và ứng dụng (`chuong_2`)** — **10 bài / 413 câu hỏi / 185 ảnh minh họa**:
     - Drive JSON folder: `https://drive.google.com/drive/folders/1XmzDWEcDwUKUssFyw-kSih5jXMVo0pZg` (`Wed ôn tập/toan/de-ngoai/tong-hop/chuong-2`)
     - Drive Images folder: `https://drive.google.com/drive/folders/1i-SRGp0YwmYr5YHRJc4_aiYwXBqWZGs7`
@@ -61,6 +74,16 @@
       6. `bai_06.json` — Bài 06: Bài toán chia kẹo Euler và công thức Bernoulli *(38 câu, 1 ảnh)*
       7. `bai_07.json` — Bài 07: Xác suất có điều kiện và công thức Bayes - Phần 1 *(63 câu, 2 ảnh)*
       8. `bai_08.json` — Bài 08: Xác suất có điều kiện và công thức Bayes - Phần 2 *(62 câu, 3 ảnh)*
+  - **Chương 4: Hệ phương trình, lý thuyết đồ thị, dãy số và tài chính (`chuong_4`)** — **5 bài / 176 câu hỏi / 41 ảnh minh họa**:
+    - Drive JSON folder: `https://drive.google.com/drive/folders/1DKF5riBkmMx12yNGv2mhJO7M8av9Lawh` (`Wed ôn tập/toan/de-ngoai/tong-hop/chuong-4`)
+    - Drive Images folder: `https://drive.google.com/drive/folders/1U8RGAp5BTUpstQiyOuBoRKjK5mETw44C`
+    - GitHub Images dir: `assets/images/toan/ngoai/tong-hop/chuong-4/bai_02..bai_04/`
+    - Chi tiết 5 bài đã xong 100%:
+      1. `bai_01.json` — Bài 01: Quy hoạch tuyến tính *(31 câu, 0 ảnh)*
+      2. `bai_02.json` — Bài 02: Ứng dụng hệ phương trình, hệ bất phương trình *(31 câu, 4 ảnh)*
+      3. `bai_03.json` — Bài 03: Ứng dụng của lý thuyết đồ thị *(26 câu, 21 ảnh)*
+      4. `bai_04.json` — Bài 04: Dãy số - Cấp số cộng - Cấp số nhân và giới hạn *(54 câu, 16 ảnh)*
+      5. `bai_05.json` — Bài 05: Ứng dụng toán học trong tài chính *(34 câu, 0 ảnh)*
   - **Chương 5: Phương pháp tọa độ trong không gian (`chuong_5`)** — **10 bài / 333 câu hỏi / 58 ảnh minh họa**:
     - Drive JSON folder: `https://drive.google.com/drive/folders/1sjzTI-jo6GP9fKD1njO0vTTE1T-8YU4H` (`Wed ôn tập/toan/de-ngoai/tong-hop/chuong-5`)
     - Drive Images folder: `https://drive.google.com/drive/folders/1F3ecrYeVWK85335v_iGNheRCMTELN_PA`
@@ -119,7 +142,8 @@
 # PENDING TASKS (NƠI DỪNG LẠI)
 
 1. **Đồng bộ từ Google Drive lên Web App (GitHub Repo)**:
-   - Toàn bộ dữ liệu JSON và hình ảnh đã có trên Google Drive tính đến thời điểm hiện tại (**Toán Đề ngoài Chương 2, Chương 3, Chương 5, Chương 6, Xác suất** và **10 trường Tin học Đề ngoài**) **ĐÃ ĐƯỢC ĐỒNG BỘ 100% LÊN WEB** (`CACHE_VERSION = 'thkc-quiz-v2.0.0'`). Không còn câu hỏi nào đang nạp dở dang giữa Drive và Web.
+   - Toàn bộ **6 chương của Toán Đề ngoài — Tổng hợp (`Chương 1` → `Chương 6`: 47 bài / 1.957 câu / 566 ảnh)**, **Xác suất (`Bài 01` → `Bài 06`)** và **10 trường Tin học Đề ngoài** **ĐÃ ĐƯỢC ĐỒNG BỘ 100% LÊN WEB** (`CACHE_VERSION = 'thkc-quiz-v2.2.0'`).
+   - Lưu ý: Trên Drive tại `Wed ôn tập/toan/de-ngoai/xac-suat` hiện có thêm các thư mục `bai-07` đến `bai-17` (chờ lệnh xác nhận của người dùng nếu muốn nạp tiếp vào chuyên đề Xác suất).
 
 2. **Các đề gốc (Word/PDF) còn lại trên Google Drive chờ bóc tách sang JSON (nếu tiếp tục bóc tách đề)**:
    - **Môn Tin học — Đề ngoài** (Thư mục file gốc `tin học` trên Drive — ID: `1nsSzoxfAO9pff-iDJA-R_krlpnRbsAfg` hiện có 15 file gốc, đã xong 10 trường ở mục Completed, còn **5 trường chưa có thư mục JSON trong `Wed ôn tập/tinhoc/de-ngoai/`**, bắt đầu từ **Câu 1** của từng đề):
@@ -128,8 +152,6 @@
      3. `THPT DIỄN CHÂU 5 - NGHỆ AN - ĐA.docx` (File ID: `1_G1JqYGCQnKmzMPM2CXHnyZm0FtTwSjb`) — cần bóc từ **Câu 1**.
      4. `THPT PHAN ĐÌNH PHÙNG - HN-ĐA.docx` (File ID: `1xdxNI9ULsgNFPoj3-IuEQwI23dm5_ldL`) — cần bóc từ **Câu 1**.
      5. `THPT Tân Sơn - Phú Thọ - Đáp án.docx` (File ID: `1w_pcXzCy2Ia6dsYSQnTVciv8VPn-KG2r`) — cần bóc từ **Câu 1**.
-   - **Môn Toán — Đề ngoài — Tổng hợp (`Wed ôn tập/toan/de-ngoai/tong-hop/`)**:
-     - `chuong-1`, `chuong-4`: Hiện thư mục trên Drive đang trống, chờ bổ sung file JSON các bài học (nếu có). Khi có thêm chương mới trên Drive, chỉ cần gộp vào mảng `categories[0].chapters` trong `data/toan-ngoai.json` và `DEFAULT_TOAN_NGOAI_CATEGORIES` trong `js/services/data.service.js` (UI Accordion 3 tầng sẽ tự động hiển thị các chương có bài học).
 
 ---
 
@@ -140,8 +162,10 @@
   - **File tracker bàn giao trên Drive**: `AI_HANDOFF_TRACKER.md` (File ID: `1rDB8hjaS1AUbZbsFrz0gPd9zSaJCyEY5`)
   - **File hướng dẫn chuẩn**: `README.txt` (File ID: `1hMBfEc6cyiYu7ZtsdJrUVVTpU0q2f_Pp`)
   - **Toán (`toan`)**: Folder ID `17kyKcPR0H3V3gJprzy0hplzd3_1rxG1b`
+    - `toan/de-ngoai/tong-hop/chuong-1`: Folder ID `1osB1IUCWnK47Ju3eeZGS3L7pnx-XTuAe`
     - `toan/de-ngoai/tong-hop/chuong-2`: Folder ID `1XmzDWEcDwUKUssFyw-kSih5jXMVo0pZg`
     - `toan/de-ngoai/tong-hop/chuong-3`: Folder ID `1tbAU45yX0cgRWMwWwZlby-enD4Zsjs_l`
+    - `toan/de-ngoai/tong-hop/chuong-4`: Folder ID `1DKF5riBkmMx12yNGv2mhJO7M8av9Lawh`
     - `toan/de-ngoai/tong-hop/chuong-5`: Folder ID `1sjzTI-jo6GP9fKD1njO0vTTE1T-8YU4H`
     - `toan/de-ngoai/tong-hop/chuong-6`: Folder ID `1i2zU7ctCvMto3DU2bCzgM_IBkXUSdHYj`
   - **Tin học (`tinhoc`)**: Folder ID `1f4rOPslr84ITpvEH9oA9z2Ak0xsZAs6O`
