@@ -5,10 +5,22 @@
     "type": "mcq",
     "question": "Trong dung dịch nước ở $25^\\circ\\text{C}$, dung dịch có môi trường axit khi giá trị $\\text{pH}$ thỏa mãn điều kiện nào sau đây?",
     "options": [
-      { "text": "$\\text{pH} < 7$", "shuffle": true },
-      { "text": "$\\text{pH} = 7$", "shuffle": true },
-      { "text": "$\\text{pH} > 7$", "shuffle": true },
-      { "text": "$\\text{pH} = 14$", "shuffle": true }
+      {
+        "text": "$\\text{pH} < 7$",
+        "shuffle": true
+      },
+      {
+        "text": "$\\text{pH} = 7$",
+        "shuffle": true
+      },
+      {
+        "text": "$\\text{pH} > 7$",
+        "shuffle": true
+      },
+      {
+        "text": "$\\text{pH} = 14$",
+        "shuffle": true
+      }
     ],
     "answer": 0,
     "explanation": "Ở $25^\\circ\\text{C}$, tích số ion của nước là $K_w = [\\text{H}^+][\\text{OH}^-] = 10^{-14}$. Môi trường axit có $[\\text{H}^+] > 10^{-7}\\text{ M} \\Rightarrow \\text{pH} = -\\log[\\text{H}^+] < 7$."
@@ -17,16 +29,46 @@
     "id": "hoahoc-2",
     "part": 2,
     "type": "truefalse",
-    "question": "Kim loại sắt ($\\text{Fe}$) tác dụng với dung dịch $\\text{HCl}$ loãng dư tạo thành muối sắt(II) clorua ($\\text{FeCl}_2$) và khí hiđro ($\\text{H}_2$).",
-    "answer": true,
-    "explanation": "Đúng. Phương trình hóa học:\n$$\\text{Fe} + 2\\text{HCl} \\rightarrow \\text{FeCl}_2 + \\text{H}_2\\uparrow$$\nDo $\\text{H}^+$ trong $\\text{HCl}$ chỉ có tính oxi hóa trung bình nên chỉ oxi hóa $\\text{Fe}$ lên số oxi hóa $+2$."
+    "question": "Cho kim loại sắt ($\\text{Fe}$) lần lượt tác dụng với các dung dịch axit trong phòng thí nghiệm. Xét tính đúng sai của các phát biểu sau:",
+    "answer": [
+      true,
+      false,
+      true,
+      true
+    ],
+    "explanation": "a) Đúng: $\\text{Fe} + 2\\text{HCl} \\rightarrow \\text{FeCl}_2 + \\text{H}_2\\uparrow$.\nb) Sai: Với $\\text{H}_2\\text{SO}_4$ loãng chỉ tạo muối sắt(II) $\\text{FeSO}_4$.\nc) Đúng: $\\text{Fe}, \\text{Al}, \\text{Cr}$ thụ động trong $\\text{HNO}_3$ đặc nguội và $\\text{H}_2\\text{SO}_4$ đặc nguội.\nd) Đúng: $\\text{Fe}$ nhường $2e$ thành $\\text{Fe}^{2+}$ nên là chất khử.",
+    "statements": [
+      {
+        "id": "a",
+        "text": "Sắt tác dụng với dung dịch $\\text{HCl}$ loãng dư tạo thành muối sắt(II) clorua ($\\text{FeCl}_2$) và khí $\\text{H}_2$.",
+        "answer": true
+      },
+      {
+        "id": "b",
+        "text": "Sắt tác dụng với dung dịch $\\text{H}_2\\text{SO}_4$ loãng tạo ra muối sắt(III) sunfat.",
+        "answer": false
+      },
+      {
+        "id": "c",
+        "text": "Sắt bị thụ động hóa trong dung dịch $\\text{HNO}_3$ đặc, nguội và $\\text{H}_2\\text{SO}_4$ đặc, nguội.",
+        "answer": true
+      },
+      {
+        "id": "d",
+        "text": "Trong phản ứng với $\\text{HCl}$, nguyên tử $\\text{Fe}$ đóng vai trò là chất khử.",
+        "answer": true
+      }
+    ]
   },
   {
     "id": "hoahoc-3",
     "part": 3,
     "type": "short",
     "question": "Cho nguyên tử khối $\\text{H} = 1, \\text{S} = 32, \\text{O} = 16$. Phân tử khối (hoặc khối lượng mol $\\text{g/mol}$) của axit sunfuric $\\text{H}_2\\text{SO}_4$ bằng bao nhiêu?",
-    "answer": ["98", "98 g/mol"],
+    "answer": [
+      "98",
+      "98 g/mol"
+    ],
     "explanation": "Khối lượng mol phân tử của $\\text{H}_2\\text{SO}_4$ là: $M = 2 \\times 1 + 32 + 4 \\times 16 = 98\\text{ g/mol}$."
   }
 ]

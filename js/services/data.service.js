@@ -703,21 +703,57 @@ function normalizeQuestion(raw, ctx) {
     return { ...base, options, answer };
   }
 
-  /* ---- Phần 2: Trắc nghiệm Đúng / Sai ---- */
+  /* ---- Phần 2: Trắc nghiệm Đúng / Sai (Gồm 4 ý a, b, c, d trong 1 câu) ---- */
   if (type === 'truefalse') {
-    const v = typeof raw.answer === 'string' ? raw.answer.trim().toLowerCase() : raw.answer;
-    let isTrue;
-    if (v === true || v === 'true' || v === 'đúng' || v === 'dung' || v === 1) isTrue = true;
-    else if (v === false || v === 'false' || v === 'sai' || v === 0) isTrue = false;
-    else return warn('"answer" phải là true hoặc false');
+    const parseBool = (val) => {
+      const v = typeof val === 'string' ? val.trim().toLowerCase() : val;
+      if (v === true || v === 'true' || v === 'đúng' || v === 'dung' || v === 1) return true;
+      if (v === false || v === 'false' || v === 'sai' || v === 0) return false;
+      return null;
+    };
+
+    if (Array.isArray(raw.statements) && raw.statements.length > 0) {
+      const defaultIds = ['a', 'b', 'c', 'd'];
+      const statements = [];
+      for (let i = 0; i < raw.statements.length; i += 1) {
+        const s = raw.statements[i];
+        if (!s || typeof s !== 'object') continue;
+        const sId = String(s.id || defaultIds[i] || `s${i + 1}`).trim().toLowerCase();
+        const sText = String(s.text ?? s.question ?? '').trim();
+        const sAns = parseBool(s.answer);
+        if (sAns === null) return warn(`ý "${sId}" thiếu answer true/false hợp lệ`);
+        statements.push({
+          id: sId,
+          text: sText,
+          answer: sAns,
+          explanation: typeof s.explanation === 'string' ? s.explanation.trim() : '',
+        });
+      }
+      if (!statements.length) return warn('danh sách "statements" rỗng');
+      return {
+        ...base,
+        options: [],
+        statements,
+        answer: statements.map((s) => s.answer),
+      };
+    }
+
+    // Fallback cho câu Đúng/Sai đơn lẻ (nếu có) -> tự bọc thành 1 mệnh đề a)
+    const isTrue = parseBool(raw.answer);
+    if (isTrue === null) return warn('"answer" phải là true hoặc false');
 
     return {
       ...base,
-      options: [
-        { text: 'Đúng', shuffle: false, index: 0 },
-        { text: 'Sai', shuffle: false, index: 1 },
+      options: [],
+      statements: [
+        {
+          id: 'a',
+          text: base.question,
+          answer: isTrue,
+          explanation: base.explanation,
+        },
       ],
-      answer: isTrue ? 0 : 1,
+      answer: [isTrue],
     };
   }
 

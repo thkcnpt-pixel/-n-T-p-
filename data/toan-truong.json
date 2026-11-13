@@ -5,10 +5,22 @@
     "type": "mcq",
     "question": "Tìm giá trị của tích phân xác định sau:\n$$I = \\int_{0}^{\\pi/2} \\sin(x)\\,\\mathrm{d}x$$\nGiá trị của $I$ bằng bao nhiêu?",
     "options": [
-      { "text": "$0$", "shuffle": true },
-      { "text": "$1$", "shuffle": true },
-      { "text": "$-1$", "shuffle": true },
-      { "text": "$\\dfrac{\\pi}{2}$", "shuffle": true }
+      {
+        "text": "$0$",
+        "shuffle": true
+      },
+      {
+        "text": "$1$",
+        "shuffle": true
+      },
+      {
+        "text": "$-1$",
+        "shuffle": true
+      },
+      {
+        "text": "$\\dfrac{\\pi}{2}$",
+        "shuffle": true
+      }
     ],
     "answer": 1,
     "explanation": "Nguyên hàm của $\\sin(x)$ là $-\\cos(x)$. Áp dụng công thức Newton–Leibniz:\n$$I = \\Big[-\\cos(x)\\Big]_{0}^{\\pi/2} = -\\cos\\left(\\frac{\\pi}{2}\\right) - (-\\cos(0)) = 0 + 1 = 1$$"
@@ -17,16 +29,46 @@
     "id": "toan-2",
     "part": 2,
     "type": "truefalse",
-    "question": "Mệnh đề sau đúng hay sai: Phương trình bậc hai $x^2 - 4x + 4 = 0$ có biệt thức $\\Delta = b^2 - 4ac = 0$ nên có nghiệm kép $x_1 = x_2 = 2$.",
-    "answer": true,
-    "explanation": "Ta có $a = 1, b = -4, c = 4 \\Rightarrow \\Delta = (-4)^2 - 4 \\cdot 1 \\cdot 4 = 0$. Nghiệm kép là $x = -\\dfrac{b}{2a} = 2$."
+    "question": "Cho hàm số bậc hai $f(x) = x^2 - 4x + 4$ có đồ thị $(P)$. Xét tính đúng sai của các mệnh đề sau:",
+    "answer": [
+      true,
+      true,
+      false,
+      true
+    ],
+    "explanation": "a) Đúng: $\\Delta = (-4)^2 - 4 \\cdot 1 \\cdot 4 = 0$, nghiệm kép $x = 2$.\nb) Đúng: $x_I = -\\frac{b}{2a} = 2 \\Rightarrow y_I = f(2) = 0$.\nc) Sai: Vì $a = 1 > 0$ nên hàm số nghịch biến trên $(-\\infty; 2)$ và đồng biến trên $(2; +\\infty)$.\nd) Đúng: $f(x) = (x - 2)^2 \\ge 0, \\forall x \\in \\mathbb{R}$.",
+    "statements": [
+      {
+        "id": "a",
+        "text": "Phương trình $f(x) = 0$ có biệt thức $\\Delta = 0$ nên có nghiệm kép $x = 2$.",
+        "answer": true
+      },
+      {
+        "id": "b",
+        "text": "Đỉnh của parabol $(P)$ có tọa độ là $I(2; 0)$.",
+        "answer": true
+      },
+      {
+        "id": "c",
+        "text": "Hàm số đồng biến trên khoảng $(-\\infty; 2)$.",
+        "answer": false
+      },
+      {
+        "id": "d",
+        "text": "Giá trị nhỏ nhất của hàm số trên $\\mathbb{R}$ bằng $0$.",
+        "answer": true
+      }
+    ]
   },
   {
     "id": "toan-3",
     "part": 3,
     "type": "short",
     "question": "Cho hàm số $f(x) = x^3 - 3x + 2$. Tính giá trị đạo hàm $f'(2)$ tại điểm $x = 2$.",
-    "answer": ["9", "9.0"],
+    "answer": [
+      "9",
+      "9.0"
+    ],
     "explanation": "Ta có đạo hàm $f'(x) = 3x^2 - 3$. Thay $x = 2$ vào: $f'(2) = 3 \\cdot 2^2 - 3 = 12 - 3 = 9$."
   }
 ]

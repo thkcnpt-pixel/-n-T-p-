@@ -41,15 +41,27 @@ function stripDiacritics(str) {
     .replace(/đ/g, 'd');
 }
 
+/** Thang điểm chuẩn cho câu Đúng/Sai 4 ý: đúng 1 ý = 0.1đ, 2 ý = 0.25đ, 3 ý = 0.5đ, 4 ý = 1.0đ */
+const TF_POINTS_MAP = [0, 0.1, 0.25, 0.5, 1.0];
+
 /**
- * Kiểm tra người dùng đã trả lời câu hỏi này chưa.
+ * Kiểm tra người dùng đã trả lời đầy đủ câu hỏi này chưa (dùng cho thanh tiến độ & Palette).
+ * Với câu Đúng/Sai 4 ý: phải chọn đủ cả 4 ý (a, b, c, d) mới tính là đã hoàn thành câu.
  * @param {any} userAnswer
+ * @param {import('../services/data.service.js').Question} [question]
  * @returns {boolean}
  */
-export function isAnswered(userAnswer) {
+export function isAnswered(userAnswer, question) {
   if (userAnswer === null || userAnswer === undefined) return false;
   if (typeof userAnswer === 'string') return userAnswer.trim().length > 0;
   if (typeof userAnswer === 'number') return Number.isFinite(userAnswer);
+  if (typeof userAnswer === 'object') {
+    if (question && Array.isArray(question.statements) && question.statements.length > 0) {
+      return question.statements.every((s) => typeof userAnswer[s.id] === 'boolean');
+    }
+    const boolKeys = Object.keys(userAnswer).filter((k) => typeof userAnswer[k] === 'boolean');
+    return boolKeys.length >= 4;
+  }
   return false;
 }
 
@@ -95,18 +107,80 @@ function matchShortKeyword(userRaw, targetRaw) {
 
 /**
  * Chấm điểm 1 câu hỏi.
+ * - MCQ / Short: đúng được 1.0 điểm, sai 0 điểm.
+ * - TrueFalse (4 ý a, b, c, d): đúng 1 ý = 0.1đ, 2 ý = 0.25đ, 3 ý = 0.5đ, 4 ý = 1.0đ.
  * @param {import('../services/data.service.js').Question} question
- * @param {any} userAnswer  Với MCQ/TrueFalse là chỉ số gốc `option.index` (number), với Short là string
- * @returns {{answered: boolean, isCorrect: boolean, correctDisplay: string}}
+ * @param {any} userAnswer
+ * @returns {{
+ *   answered: boolean,
+ *   isFullyAnswered: boolean,
+ *   isCorrect: boolean,
+ *   points: number,
+ *   maxPoints: number,
+ *   correctCount?: number,
+ *   totalStatements?: number,
+ *   correctDisplay: string
+ * }}
  */
 export function gradeQuestion(question, userAnswer) {
-  const answered = isAnswered(userAnswer);
+  if (question.type === 'truefalse' && Array.isArray(question.statements) && question.statements.length > 0) {
+    const stmts = question.statements;
+    const ansObj = userAnswer && typeof userAnswer === 'object' ? userAnswer : {};
+    let answeredCount = 0;
+    let correctCount = 0;
 
-  if (question.type === 'mcq' || question.type === 'truefalse') {
+    stmts.forEach((s) => {
+      const picked = ansObj[s.id];
+      if (typeof picked === 'boolean') {
+        answeredCount += 1;
+        if (picked === s.answer) {
+          correctCount += 1;
+        }
+      }
+    });
+
+    const totalStatements = stmts.length;
+    const answered = answeredCount > 0;
+    const isFullyAnswered = answeredCount === totalStatements;
+    const isCorrect = correctCount === totalStatements;
+
+    let points = 0;
+    if (totalStatements === 4) {
+      points = TF_POINTS_MAP[correctCount] ?? 0;
+    } else if (totalStatements > 0) {
+      points = Math.round((correctCount / totalStatements) * 100) / 100;
+    }
+
+    const correctDisplay = stmts
+      .map((s) => `${s.id}) ${s.answer ? 'Đúng' : 'Sai'}`)
+      .join(' · ');
+
+    return {
+      answered,
+      isFullyAnswered,
+      isCorrect,
+      points,
+      maxPoints: 1,
+      correctCount,
+      totalStatements,
+      correctDisplay,
+    };
+  }
+
+  const answered = isAnswered(userAnswer, question);
+
+  if (question.type === 'mcq') {
     const correctOpt = question.options.find((o) => o.index === question.answer);
     const correctDisplay = correctOpt ? correctOpt.text : '';
     const isCorrect = answered && Number(userAnswer) === Number(question.answer);
-    return { answered, isCorrect, correctDisplay };
+    return {
+      answered,
+      isFullyAnswered: answered,
+      isCorrect,
+      points: isCorrect ? 1 : 0,
+      maxPoints: 1,
+      correctDisplay,
+    };
   }
 
   // Câu trả lời ngắn (question.answer là mảng các đáp án chấp nhận)
@@ -114,13 +188,20 @@ export function gradeQuestion(question, userAnswer) {
   const correctDisplay = acceptedList.join(' / ');
   const isCorrect = answered && acceptedList.some((target) => matchShortKeyword(String(userAnswer), String(target)));
 
-  return { answered, isCorrect, correctDisplay };
+  return {
+    answered,
+    isFullyAnswered: answered,
+    isCorrect,
+    points: isCorrect ? 1 : 0,
+    maxPoints: 1,
+    correctDisplay,
+  };
 }
 
 /**
  * Chấm toàn bộ bài làm và tổng hợp thống kê cho màn hình Kết quả & Lịch sử.
- * `wrongIds` bao gồm cả câu làm sai và câu bỏ trống để tính năng
- * "Chỉ làm lại những câu sai" không bỏ sót câu chưa làm.
+ * `wrongIds` bao gồm cả câu làm sai / chưa đủ điểm tối đa và câu bỏ trống để tính năng
+ * "Chỉ làm lại những câu sai" không bỏ sót câu nào.
  * @param {Array<import('../services/data.service.js').Question>} questions
  * @param {Object<string, any>} answers  Map `question.key` -> câu trả lời
  * @returns {{
@@ -128,10 +209,11 @@ export function gradeQuestion(question, userAnswer) {
  *   correct: number,
  *   wrong: number,
  *   unanswered: number,
+ *   earnedPoints: number,
  *   score: number,
  *   percent: number,
  *   wrongIds: string[],
- *   details: Object<string, {answered: boolean, isCorrect: boolean, userAnswer: any, correctDisplay: string}>
+ *   details: Object<string, any>
  * }}
  */
 export function gradeQuiz(questions, answers = {}) {
@@ -139,6 +221,7 @@ export function gradeQuiz(questions, answers = {}) {
   let correct = 0;
   let wrong = 0;
   let unanswered = 0;
+  let rawPoints = 0;
   /** @type {string[]} */
   const wrongIds = [];
   /** @type {Object<string, any>} */
@@ -148,6 +231,7 @@ export function gradeQuiz(questions, answers = {}) {
     const userAnswer = answers[q.key];
     const res = gradeQuestion(q, userAnswer);
     details[q.key] = { ...res, userAnswer };
+    rawPoints += res.points;
 
     if (!res.answered) {
       unanswered += 1;
@@ -160,14 +244,16 @@ export function gradeQuiz(questions, answers = {}) {
     }
   }
 
-  const score = total > 0 ? Math.round((correct / total) * 1000) / 100 : 0;
-  const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
+  const earnedPoints = Math.round(rawPoints * 100) / 100;
+  const score = total > 0 ? Math.round((rawPoints / total) * 1000) / 100 : 0;
+  const percent = total > 0 ? Math.round((rawPoints / total) * 100) : 0;
 
   return {
     total,
     correct,
     wrong,
     unanswered,
+    earnedPoints,
     score,
     percent,
     wrongIds,

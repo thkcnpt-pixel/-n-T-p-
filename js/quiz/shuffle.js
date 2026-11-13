@@ -68,6 +68,7 @@ export function prepareQuizQuestions(questions, settings = {}) {
   const cloned = questions.map((q) => ({
     ...q,
     options: Array.isArray(q.options) ? q.options.map((opt) => ({ ...opt })) : [],
+    statements: Array.isArray(q.statements) ? q.statements.map((s) => ({ ...s })) : undefined,
   }));
 
   const orderedQuestions = shuffleQuestions

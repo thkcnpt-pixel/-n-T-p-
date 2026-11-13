@@ -644,10 +644,147 @@
   gap: var(--sp-2);
 }
 
-/* Câu Đúng/Sai: 2 cột */
+/* Câu Đúng/Sai 4 mệnh đề (a, b, c, d): gọn gàng, trực quan trên 1 khung câu hỏi */
 .question-card[data-type="truefalse"] .question-card__options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.tf-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-md);
+  transition: background-color var(--dur-fast), border-color var(--dur-fast);
+}
+
+@media (max-width: 520px) {
+  .tf-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--sp-2);
+  }
+}
+
+.tf-row.is-correct {
+  background: var(--c-success-soft);
+  border-color: var(--c-success);
+}
+
+.tf-row.is-wrong {
+  background: var(--c-danger-soft);
+  border-color: var(--c-danger);
+}
+
+.tf-row__content {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  flex: 1;
+  min-width: 0;
+}
+
+.tf-row__label {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--c-bg-elevated);
+  border: 1px solid var(--c-border-strong);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  color: var(--c-primary);
+}
+
+.tf-row.is-correct .tf-row__label {
+  background: var(--c-success);
+  border-color: var(--c-success);
+  color: var(--c-text-invert);
+}
+
+.tf-row.is-wrong .tf-row__label {
+  background: var(--c-danger);
+  border-color: var(--c-danger);
+  color: var(--c-text-invert);
+}
+
+.tf-row__text {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.tf-row__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  flex-shrink: 0;
+}
+
+@media (max-width: 520px) {
+  .tf-row__actions {
+    justify-content: flex-end;
+  }
+}
+
+.tf-btn {
+  min-width: 64px;
+  min-height: 34px;
+  padding: 4px var(--sp-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--c-border-strong);
+  background: var(--c-bg-elevated);
+  color: var(--c-text-muted);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  cursor: pointer;
+  transition: background-color var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast), transform var(--dur-fast);
+}
+
+.tf-btn:hover:not(:disabled) {
+  background: var(--c-surface-hover);
+  color: var(--c-text);
+}
+
+.tf-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.tf-btn.is-selected {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: var(--c-text-invert);
+}
+
+.tf-btn.is-correct {
+  background: var(--c-success);
+  border-color: var(--c-success);
+  color: var(--c-text-invert);
+}
+
+.tf-btn.is-wrong {
+  background: var(--c-danger);
+  border-color: var(--c-danger);
+  color: var(--c-text-invert);
+}
+
+.tf-btn:disabled {
+  cursor: default;
+}
+
+.tf-btn:disabled:not(.is-selected):not(.is-correct):not(.is-wrong) {
+  opacity: 0.55;
 }
 
 /* Trả lời ngắn */

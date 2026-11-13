@@ -5,10 +5,22 @@
     "type": "mcq",
     "question": "Bào quan nào trong tế bào nhân thực được mệnh danh là \"nhà máy phát điện\" vì thực hiện quá trình hô hấp tế bào tạo ra phần lớn $\\text{ATP}$?",
     "options": [
-      { "text": "Ti thể (Mitochondria)", "shuffle": true },
-      { "text": "Ribosome", "shuffle": true },
-      { "text": "Bộ máy Golgi", "shuffle": true },
-      { "text": "Không bào", "shuffle": true }
+      {
+        "text": "Ti thể (Mitochondria)",
+        "shuffle": true
+      },
+      {
+        "text": "Ribosome",
+        "shuffle": true
+      },
+      {
+        "text": "Bộ máy Golgi",
+        "shuffle": true
+      },
+      {
+        "text": "Không bào",
+        "shuffle": true
+      }
     ],
     "answer": 0,
     "explanation": "Ti thể là nơi diễn ra chuỗi truyền electron và chu trình Krebs trong hô hấp hiếu khí, tổng hợp năng lượng dưới dạng phân tử $\\text{ATP}$ cho tế bào."
@@ -17,16 +29,46 @@
     "id": "sinhhoc-2",
     "part": 2,
     "type": "truefalse",
-    "question": "Theo nguyên tắc bổ sung trong cấu trúc phân tử $\\text{DNA}$ mạch kép, bazơ nitơ Adenin ($\\text{A}$) luôn liên kết với Timin ($\\text{T}$) bằng 2 liên kết hiđro, còn Guanin ($\\text{G}$) liên kết với Xitozin ($\\text{C}$) bằng 3 liên kết hiđro.",
-    "answer": true,
-    "explanation": "Đúng. Trong $\\text{DNA}$ mạch kép: $\\text{A}$ liên kết với $\\text{T}$ bằng 2 liên kết hiđro ($\\text{A}=\\text{T}$) và $\\text{G}$ liên kết với $\\text{C}$ bằng 3 liên kết hiđro ($\\text{G}\\equiv\\text{C}$)."
+    "question": "Khi nghiên cứu về cấu trúc và cơ chế di truyền của phân tử $\\text{DNA}$ mạch kép ở sinh vật nhân thực:",
+    "answer": [
+      true,
+      false,
+      true,
+      true
+    ],
+    "explanation": "a) Đúng: $\\text{A}$ liên kết với $\\text{T}$ bằng 2 liên kết hiđro, $\\text{G}$ liên kết với $\\text{C}$ bằng 3 liên kết hiđro.\nb) Sai: Hai mạch đơn của $\\text{DNA}$ xoắn kép song song và ngược chiều nhau.\nc) Đúng: Hệ quả nguyên tắc bổ sung $\\text{A} = \\text{T}, \\text{G} = \\text{C}$.\nd) Đúng: Nhân đôi $\\text{DNA}$ tuân theo nguyên tắc bổ sung và bán bảo toàn.",
+    "statements": [
+      {
+        "id": "a",
+        "text": "Theo nguyên tắc bổ sung, Adenin ($\\text{A}$) liên kết với Timin ($\\text{T}$) bằng 2 liên kết hiđro, Guanin ($\\text{G}$) liên kết với Xitozin ($\\text{C}$) bằng 3 liên kết hiđro.",
+        "answer": true
+      },
+      {
+        "id": "b",
+        "text": "Hai mạch đơn của phân tử $\\text{DNA}$ song song và cùng chiều $5' \\rightarrow 3'$.",
+        "answer": false
+      },
+      {
+        "id": "c",
+        "text": "Số lượng nuclêôtit loại $\\text{A}$ luôn bằng số lượng nuclêôtit loại $\\text{T}$ trên toàn phân tử $\\text{DNA}$ mạch kép.",
+        "answer": true
+      },
+      {
+        "id": "d",
+        "text": "Quá trình nhân đôi $\\text{DNA}$ diễn ra theo nguyên tắc bổ sung và nguyên tắc bán bảo toàn.",
+        "answer": true
+      }
+    ]
   },
   {
     "id": "sinhhoc-3",
     "part": 3,
     "type": "short",
     "question": "Ở người bình thường khỏe mạnh, bộ nhiễm sắc thể lưỡng bội $2n$ trong mỗi tế bào sinh dưỡng có bao nhiêu nhiễm sắc thể?",
-    "answer": ["46", "46 nst"],
+    "answer": [
+      "46",
+      "46 nst"
+    ],
     "explanation": "Bộ nhiễm sắc thể lưỡng bội của loài người là $2n = 46$ (gồm 22 cặp NST thường và 1 cặp NST giới tính)."
   }
 ]

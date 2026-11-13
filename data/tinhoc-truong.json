@@ -5,10 +5,22 @@
     "type": "mcq",
     "question": "Trong ngôn ngữ lập trình JavaScript (ES6+), từ khóa nào dùng để khai báo biến có phạm vi khối (block scope)?",
     "options": [
-      { "text": "let", "shuffle": true },
-      { "text": "const", "shuffle": true },
-      { "text": "var", "shuffle": true },
-      { "text": "Cả let và const đều đúng", "shuffle": false }
+      {
+        "text": "let",
+        "shuffle": true
+      },
+      {
+        "text": "const",
+        "shuffle": true
+      },
+      {
+        "text": "var",
+        "shuffle": true
+      },
+      {
+        "text": "Cả let và const đều đúng",
+        "shuffle": false
+      }
     ],
     "answer": 3,
     "explanation": "Cả `let` và `const` đều có phạm vi khối (block scope `{ ... }`), trong khi `var` có phạm vi hàm (function scope). Lưu ý: đáp án cuối có `\"shuffle\": false` nên luôn cố định ở vị trí D ngay cả khi bật xáo trộn đáp án."
@@ -17,16 +29,47 @@
     "id": "tinhoc-2",
     "part": 2,
     "type": "truefalse",
-    "question": "Giao thức HTTPS sử dụng TLS/SSL để mã hóa dữ liệu truyền giữa trình duyệt và máy chủ web.",
-    "answer": true,
-    "explanation": "Đúng. HTTPS (Hypertext Transfer Protocol Secure) kết hợp HTTP với tầng bảo mật TLS/SSL nhằm đảm bảo tính bí mật và toàn vẹn dữ liệu."
+    "question": "Khi tìm hiểu về các giao thức mạng và bảo mật truyền thông trên Internet, một học sinh đưa ra các nhận định sau:",
+    "answer": [
+      true,
+      true,
+      false,
+      true
+    ],
+    "explanation": "a) Đúng: HTTPS kết hợp HTTP với TLS/SSL để mã hóa dữ liệu.\nb) Đúng: IP phụ trách địa chỉ logic và định tuyến gói tin.\nc) Sai: TCP là giao thức hướng kết nối, đảm bảo truyền tin cậy và đúng thứ tự.\nd) Đúng: DNS chuyển đổi tên miền dễ nhớ sang địa chỉ IP.",
+    "statements": [
+      {
+        "id": "a",
+        "text": "Giao thức HTTPS sử dụng TLS/SSL để mã hóa dữ liệu truyền giữa trình duyệt và máy chủ web.",
+        "answer": true
+      },
+      {
+        "id": "b",
+        "text": "Giao thức IP làm nhiệm vụ định tuyến và gán địa chỉ logic cho các thiết bị trong mạng.",
+        "answer": true
+      },
+      {
+        "id": "c",
+        "text": "Giao thức TCP không đảm bảo dữ liệu truyền đi đầy đủ và đúng thứ tự.",
+        "answer": false
+      },
+      {
+        "id": "d",
+        "text": "Dịch vụ DNS dùng để phân giải tên miền thành địa chỉ IP tương ứng.",
+        "answer": true
+      }
+    ]
   },
   {
     "id": "tinhoc-3",
     "part": 3,
     "type": "short",
     "question": "Cấu trúc dữ liệu hoạt động theo nguyên tắc \"Vào sau, Ra trước\" (Last In, First Out) viết tắt tiếng Anh gồm 4 chữ cái là gì?",
-    "answer": ["lifo", "stack", "ngăn xếp"],
+    "answer": [
+      "lifo",
+      "stack",
+      "ngăn xếp"
+    ],
     "explanation": "Nguyên tắc Last In, First Out viết tắt là LIFO (đặc trưng của cấu trúc dữ liệu Ngăn xếp – Stack)."
   }
 ]

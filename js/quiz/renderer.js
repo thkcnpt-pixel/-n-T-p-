@@ -109,7 +109,7 @@ export function createQuestionCard(question, displayIndex, opts = {}) {
   const shortForm = /** @type {HTMLFormElement} */ (card.querySelector('.question-card__short'));
   const shortInput = /** @type {HTMLInputElement} */ (card.querySelector('.short-input'));
 
-  if (question.type === 'mcq' || question.type === 'truefalse') {
+  if (question.type === 'mcq') {
     shortForm.hidden = true;
     optionsWrap.hidden = false;
     optionsWrap.setAttribute('aria-label', `Đáp án câu ${displayIndex + 1}`);
@@ -121,9 +121,7 @@ export function createQuestionCard(question, displayIndex, opts = {}) {
       const labelEl = btn.querySelector('.option__label');
       const textEl = btn.querySelector('.option__text');
 
-      labelEl.textContent = question.type === 'truefalse'
-        ? (opt.index === 0 ? 'Đ' : 'S')
-        : String.fromCharCode(65 + pos); // A, B, C, D luôn theo thứ tự hiển thị
+      labelEl.textContent = String.fromCharCode(65 + pos); // A, B, C, D luôn theo thứ tự hiển thị
       textEl.textContent = opt.text;
 
       btn.addEventListener('click', () => {
@@ -132,6 +130,68 @@ export function createQuestionCard(question, displayIndex, opts = {}) {
       });
 
       optionsWrap.appendChild(btn);
+    });
+  } else if (question.type === 'truefalse') {
+    shortForm.hidden = true;
+    optionsWrap.hidden = false;
+    optionsWrap.setAttribute('aria-label', `Các mệnh đề Đúng/Sai câu ${displayIndex + 1}`);
+    card._tfAnswers = userAnswer && typeof userAnswer === 'object' ? { ...userAnswer } : {};
+
+    const statements = Array.isArray(question.statements) ? question.statements : [];
+    statements.forEach((stmt) => {
+      const row = document.createElement('div');
+      row.className = 'tf-row';
+      row.dataset.stmtId = stmt.id;
+
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'tf-row__content';
+
+      const badgeSpan = document.createElement('span');
+      badgeSpan.className = 'tf-row__label';
+      badgeSpan.textContent = `${stmt.id})`;
+
+      const textSpan = document.createElement('div');
+      textSpan.className = 'tf-row__text math-content';
+      textSpan.textContent = stmt.text;
+
+      contentDiv.appendChild(badgeSpan);
+      contentDiv.appendChild(textSpan);
+
+      const actionsDiv = document.createElement('div');
+      actionsDiv.className = 'tf-row__actions';
+      actionsDiv.setAttribute('role', 'radiogroup');
+      actionsDiv.setAttribute('aria-label', `Mệnh đề ${stmt.id}`);
+
+      [
+        { val: true, label: 'Đúng' },
+        { val: false, label: 'Sai' },
+      ].forEach(({ val, label }) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'tf-btn';
+        btn.setAttribute('role', 'radio');
+        btn.setAttribute('aria-checked', 'false');
+        btn.dataset.stmtId = stmt.id;
+        btn.dataset.val = String(val);
+        btn.textContent = label;
+
+        btn.addEventListener('click', () => {
+          if (btn.disabled) return;
+          const nextAns = {
+            ...(card._tfAnswers && typeof card._tfAnswers === 'object' ? card._tfAnswers : {}),
+            [stmt.id]: val,
+          };
+          card._tfAnswers = nextAns;
+          const allPicked = isAnswered(nextAns, question);
+          onAnswer?.(question.key, nextAns, card, { commit: allPicked });
+        });
+
+        actionsDiv.appendChild(btn);
+      });
+
+      row.appendChild(contentDiv);
+      row.appendChild(actionsDiv);
+      optionsWrap.appendChild(row);
     });
   } else {
     // Trả lời ngắn
@@ -206,15 +266,15 @@ export function syncQuestionCardState(card, question, state = {}) {
 
   // 1) data-state trên card (đổi màu viền trái trong components.css)
   if (!revealed) {
-    card.dataset.state = grade.answered ? 'answered' : 'unanswered';
+    card.dataset.state = grade.isFullyAnswered ? 'answered' : 'unanswered';
   } else if (!grade.answered) {
     card.dataset.state = 'skipped';
   } else {
     card.dataset.state = grade.isCorrect ? 'correct' : 'wrong';
   }
 
-  // 2) Các nút đáp án (MCQ / TrueFalse)
-  if (question.type === 'mcq' || question.type === 'truefalse') {
+  // 2) Các nút đáp án (MCQ / TrueFalse 4 ý / Trả lời ngắn)
+  if (question.type === 'mcq') {
     const buttons = card.querySelectorAll('.option');
     buttons.forEach((btn) => {
       const optIndex = Number(btn.dataset.index);
@@ -225,6 +285,38 @@ export function syncQuestionCardState(card, question, state = {}) {
       btn.classList.toggle('is-correct', revealed && isCorrectOpt);
       btn.classList.toggle('is-wrong', revealed && isSelected && !isCorrectOpt);
       btn.disabled = Boolean(locked);
+    });
+  } else if (question.type === 'truefalse') {
+    const ansObj = userAnswer && typeof userAnswer === 'object' ? userAnswer : {};
+    card._tfAnswers = { ...ansObj };
+    const statements = Array.isArray(question.statements) ? question.statements : [];
+    const stmtMap = new Map(statements.map((s) => [s.id, s]));
+
+    card.querySelectorAll('.tf-row').forEach((row) => {
+      const stmtId = /** @type {HTMLElement} */ (row).dataset.stmtId;
+      const stmt = stmtMap.get(stmtId);
+      if (!stmt) return;
+
+      const picked = ansObj[stmtId];
+      const hasPicked = typeof picked === 'boolean';
+      const isStmtCorrect = hasPicked && picked === stmt.answer;
+
+      row.classList.toggle('is-answered', !revealed && hasPicked);
+      row.classList.toggle('is-correct', revealed && isStmtCorrect);
+      row.classList.toggle('is-wrong', revealed && !isStmtCorrect);
+
+      row.querySelectorAll('.tf-btn').forEach((btn) => {
+        const b = /** @type {HTMLButtonElement} */ (btn);
+        const btnVal = b.dataset.val === 'true';
+        const isSelected = hasPicked && picked === btnVal;
+        const isTarget = stmt.answer === btnVal;
+
+        b.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+        b.classList.toggle('is-selected', isSelected);
+        b.classList.toggle('is-correct', revealed && isTarget);
+        b.classList.toggle('is-wrong', revealed && isSelected && !isTarget);
+        b.disabled = Boolean(locked);
+      });
     });
   } else {
     // 3) Ô nhập câu trả lời ngắn
@@ -243,8 +335,16 @@ export function syncQuestionCardState(card, question, state = {}) {
     feedbackEl.classList.toggle('is-correct', grade.isCorrect);
     feedbackEl.classList.toggle('is-wrong', !grade.isCorrect);
 
-    if (grade.isCorrect) {
-      feedbackEl.textContent = '✓ Chính xác!';
+    if (question.type === 'truefalse') {
+      if (grade.isCorrect) {
+        feedbackEl.textContent = `✓ Chính xác hoàn toàn (${grade.correctCount}/${grade.totalStatements} ý đúng — +${grade.points} điểm)`;
+      } else if (!grade.answered) {
+        feedbackEl.textContent = `✕ Chưa trả lời (+0 điểm) — Đáp án: ${grade.correctDisplay}`;
+      } else {
+        feedbackEl.textContent = `Đúng ${grade.correctCount}/${grade.totalStatements} ý (+${grade.points} điểm) — Đáp án: ${grade.correctDisplay}`;
+      }
+    } else if (grade.isCorrect) {
+      feedbackEl.textContent = '✓ Chính xác! (+1 điểm)';
     } else if (!grade.answered) {
       feedbackEl.textContent = `✕ Chưa trả lời — Đáp án đúng: ${grade.correctDisplay}`;
     } else {
@@ -316,7 +416,7 @@ export function updatePaletteState(paletteEl, questions, answers, checked, curre
     if (!q) return;
 
     const ans = answers[q.key];
-    const hasAns = isAnswered(ans);
+    const hasAns = isAnswered(ans, q);
     const isChecked = Boolean(checked?.[q.key]);
 
     btn.classList.remove('is-answered', 'is-correct', 'is-wrong', 'is-current');

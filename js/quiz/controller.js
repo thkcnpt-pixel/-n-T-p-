@@ -237,8 +237,8 @@ function handleUserAnswer(questionKey, value, card, meta = {}) {
   const explainMode = getState('settings').explainMode;
   const shouldInstantCheck =
     explainMode === 'instant' &&
-    isAnswered(value) &&
-    (question.type !== 'short' || meta.commit === true);
+    isAnswered(value, question) &&
+    ((question.type !== 'short' && question.type !== 'truefalse') || meta.commit === true);
 
   if (shouldInstantCheck) {
     quiz.checked[questionKey] = true;
@@ -389,7 +389,7 @@ export function prevQuestion() {
 function updateProgressUI() {
   const quiz = getState('quiz');
   const total = quiz.questions.length;
-  const answeredCount = quiz.questions.filter((q) => isAnswered(quiz.answers[q.key])).length;
+  const answeredCount = quiz.questions.filter((q) => isAnswered(quiz.answers[q.key], q)).length;
   const percent = total > 0 ? Math.round((answeredCount / total) * 100) : 0;
 
   const textEl = document.getElementById('quiz-progress-text');
@@ -473,7 +473,7 @@ async function requestSubmitQuiz() {
   if (quiz.submitted) return;
 
   const total = quiz.questions.length;
-  const answeredCount = quiz.questions.filter((q) => isAnswered(quiz.answers[q.key])).length;
+  const answeredCount = quiz.questions.filter((q) => isAnswered(quiz.answers[q.key], q)).length;
   const remaining = total - answeredCount;
 
   const message = remaining > 0
@@ -573,7 +573,8 @@ function renderResultScreen(result) {
     ringEl.classList.remove('is-good', 'is-mid', 'is-low');
     ringEl.classList.add(result.percent >= 80 ? 'is-good' : result.percent >= 50 ? 'is-mid' : 'is-low');
   }
-  if (scoreEl) scoreEl.textContent = String(result.correct);
+  const earnedDisplay = result.earnedPoints !== undefined ? result.earnedPoints : result.correct;
+  if (scoreEl) scoreEl.textContent = String(earnedDisplay);
   if (totalEl) totalEl.textContent = String(result.total);
   if (percentEl) percentEl.textContent = `${result.score} điểm (${result.percent}%)`;
   if (subjectEl) {
