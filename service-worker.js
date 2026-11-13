@@ -10,7 +10,7 @@
    Dev by Thkc
    ========================================================================== */
 
-const CACHE_VERSION = 'thkc-quiz-v2.2.0';
+const CACHE_VERSION = 'thkc-quiz-v2.3.0';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 

@@ -125,33 +125,56 @@
 ---
 
 ### 2. Môn Tin học — Đề ngoài (`data/tinhoc-ngoai.json`)
-Đã nạp và phân loại theo từng trường THPT (**10 trường / 480 câu hỏi / 4 ảnh minh họa**) từ Drive (`https://drive.google.com/drive/folders/1fsIdOAAvOT-kZH0bTZU5OAG9wn_IR7gI`) lên web (`data/tinhoc-ngoai.json` & `assets/images/tinhoc/ngoai/`):
-1. `cum-chuyen-mon-so-3-dak-lak/de_01.json` — **Cụm chuyên môn số 3 – Đắk Lắk** *(48 câu, 0 ảnh)* — Drive folder: `1F4tMPKgp0RymSO01TB3Gcm3cXs5J6DAF`
-2. `thpt-binh-khanh/de_01.json` — **THPT Bình Khánh** *(48 câu, 0 ảnh)* — Drive folder: `1PWvD-zJLMkm5D8jhmkNmhLttyk_IT-nB`
-3. `thpt-chuyen-hung-vuong/de_01.json` — **THPT Chuyên Hùng Vương** *(48 câu, 0 ảnh)* — Drive folder: `1Q4s2q2vCqpI-3K9GP_0yfcQ-jtv722hi`
-4. `thpt-chuyen-luong-van-chanh/de_01.json` — **THPT Chuyên Lương Văn Chánh – Phú Yên** *(48 câu, 2 ảnh: `cau_23.png`, `cau_24.png`)* — Drive folder: `1fvop4v9aFCmbjH1kOigiKLvy3u7cBGBC`
-5. `thpt-ly-son/de_01.json` — **THPT Lý Sơn – Quảng Ngãi** *(48 câu, 0 ảnh)* — Drive folder: `1yJm6JoqcrSF0n0mz3GGDsH4dxInoyUG2`
-6. `thpt-phan-boi-chau/de_01.json` — **THPT Phan Bội Châu – Phú Yên** *(48 câu, 2 ảnh: `cau_11.png`, `cau_22.png`)* — Drive folder: `13ozwW3uIEdIhHw5jv6o25ICEoGDFzH61`
-7. `thpt-tam-phuoc/de_01.json` — **THPT Tam Phước** *(48 câu, 0 ảnh)* — Drive folder: `14AvJAxsLGjg-DbqDCLe0XAaKj-aPGs7z`
-8. `thpt-thanh-my-tay/de_01.json` — **THPT Thạnh Mỹ Tây – An Giang** *(48 câu, 0 ảnh)* — Drive folder: `1YCQ6uj4IIYP4AQi6_cnJR0hYTzMnllTW`
-9. `thpt-tran-van-quan/de_01.json` — **THPT Trần Văn Quan – Vũng Tàu** *(48 câu, 0 ảnh)* — Drive folder: `1VUoH1k6KvfVWffsqqVSv40deeX8trkkA`
-10. `thpt-van-quan/de_01.json` — **THPT Văn Quán – Vĩnh Phúc** *(48 câu, 0 ảnh)* — Drive folder: `16EsXdPmUHlo5TAYGCVr31MLACTD1v4Um`
+Đã nạp và phân loại theo từng trường THPT (**41 trường / 49 đề thi / 2.296 câu hỏi / 16 ảnh minh họa**) từ Drive (`https://drive.google.com/drive/folders/1fsIdOAAvOT-kZH0bTZU5OAG9wn_IR7gI`) lên web (`data/tinhoc-ngoai.json` & `assets/images/tinhoc/ngoai/`):
+1. `chuyen-pho-thong-nang-khieu` (`de_01.json`, `de_02.json`) — **Chuyên Phổ thông Năng khiếu (Đề 01 & Đề 02)** *(80 câu, 1 ảnh)*
+2. `cum-5-truong-thpt-ninh-binh/de_01.json` — **Cụm 5 trường THPT – Ninh Bình** *(47 câu, 0 ảnh)*
+3. `cum-7-truong-phia-dong-hai-phong` (`de_01.json`, `de_02.json`) — **Cụm 7 trường phía Đông – Hải Phòng (Đề 01 & Đề 02)** *(96 câu, 3 ảnh)*
+4. `cum-chuyen-mon-so-10-dak-lak` (`de_01.json`, `de_02.json`) — **Cụm chuyên môn số 10 – Đắk Lắk (Đề 01 & Đề 02)** *(96 câu, 0 ảnh)*
+5. `cum-chuyen-mon-so-2-dak-lak/de_01.json` — **Cụm chuyên môn số 2 – Đắk Lắk** *(48 câu, 0 ảnh)*
+6. `cum-chuyen-mon-so-3-dak-lak/de_01.json` — **Cụm chuyên môn số 3 – Đắk Lắk** *(48 câu, 0 ảnh)*
+7. `cum-chuyen-mon-so-8-dak-lak/de_01.json` — **Cụm chuyên môn số 8 – Đắk Lắk** *(48 câu, 0 ảnh)*
+8. `cum-ha-tinh-nghe-an/de_01.json` — **Cụm trường THPT Hà Tĩnh – Nghệ An** *(48 câu, 0 ảnh)*
+9. `cum-truong-bac-lao-cai/de_01.json` — **Cụm trường Bắc Lào Cai** *(48 câu, 0 ảnh)*
+10. `cum-truong-thpt-so-8-ha-noi/de_01.json` — **Cụm trường THPT số 8 – Hà Nội** *(48 câu, 0 ảnh)*
+11. `lien-truong-thpt/de_01.json` — **Liên trường THPT** *(48 câu, 0 ảnh)*
+12. `lien-truong-thpt-ha-noi/de_01.json` — **Liên trường THPT – Hà Nội** *(40 câu, 0 ảnh)*
+13. `thpt-b-nguyen-khuyen/de_01.json` — **THPT B Nguyễn Khuyến** *(48 câu, 0 ảnh)*
+14. `thpt-binh-khanh/de_01.json` — **THPT Bình Khánh** *(48 câu, 0 ảnh)*
+15. `thpt-chu-van-an-gia-nghia/de_01.json` — **THPT Chu Văn An – Gia Nghĩa** *(48 câu, 1 ảnh)*
+16. `thpt-chuyen-hung-vuong` (`de_01.json`, `de_02.json`) — **THPT Chuyên Hùng Vương (Đề 01 & Đề 02)** *(96 câu, 0 ảnh)*
+17. `thpt-chuyen-le-khiet/de_01.json` — **THPT Chuyên Lê Khiết** *(48 câu, 0 ảnh)*
+18. `thpt-chuyen-le-quy-don/de_01.json` — **THPT Chuyên Lê Quý Đôn** *(48 câu, 1 ảnh)*
+19. `thpt-chuyen-luong-van-chanh` (`de_01.json`, `de_02.json`) — **THPT Chuyên Lương Văn Chánh – Phú Yên (Đề 01 & Đề 02)** *(96 câu, 2 ảnh)*
+20. `thpt-chuyen-quang-trung/de_01.json` — **THPT Chuyên Quang Trung** *(48 câu, 0 ảnh)*
+21. `thpt-hoang-van-thu/de_01.json` — **THPT Hoàng Văn Thụ** *(48 câu, 1 ảnh)*
+22. `thpt-le-thanh-tong` (`de_01.json`, `de_02.json`) — **THPT Lê Thánh Tông (Đề 01 & Đề 02)** *(97 câu, 2 ảnh)*
+23. `thpt-le-thuy/de_01.json` — **THPT Lệ Thủy** *(48 câu, 0 ảnh)*
+24. `thpt-ly-son/de_01.json` — **THPT Lý Sơn – Quảng Ngãi** *(48 câu, 0 ảnh)*
+25. `thpt-ly-tu-trong/de_01.json` — **THPT Lý Tự Trọng** *(48 câu, 0 ảnh)*
+26. `thpt-marie-curie/de_01.json` — **THPT Marie Curie** *(40 câu, 0 ảnh)*
+27. `thpt-nguyen-binh-khiem/de_01.json` — **THPT Nguyễn Bỉnh Khiêm** *(48 câu, 0 ảnh)*
+28. `thpt-nguyen-quang-thieu/de_01.json` — **THPT Nguyễn Quang Thiệu** *(40 câu, 2 ảnh)*
+29. `thpt-nguyen-van-cu/de_01.json` — **THPT Nguyễn Văn Cừ** *(48 câu, 0 ảnh)*
+30. `thpt-nguyen-van-troi/de_01.json` — **THPT Nguyễn Văn Trỗi** *(48 câu, 0 ảnh)*
+31. `thpt-pham-van-sang` (`de_01.json`, `de_02.json`) — **THPT Phạm Văn Sáng (Đề 01 & Đề 02)** *(96 câu, 1 ảnh)*
+32. `thpt-phan-boi-chau/de_01.json` — **THPT Phan Bội Châu – Phú Yên** *(48 câu, 2 ảnh)*
+33. `thpt-phuc-loi/de_01.json` — **THPT Phúc Lợi** *(48 câu, 0 ảnh)*
+34. `thpt-tam-phuoc/de_01.json` — **THPT Tam Phước** *(48 câu, 0 ảnh)*
+35. `thpt-thanh-my-tay/de_01.json` — **THPT Thạnh Mỹ Tây – An Giang** *(48 câu, 0 ảnh)*
+36. `thpt-tran-hung-dao` (`de_01.json`, `de_02.json`) — **THPT Trần Hưng Đạo (Đề 01 & Đề 02)** *(88 câu, 0 ảnh)*
+37. `thpt-tran-van-quan/de_01.json` — **THPT Trần Văn Quan – Vũng Tàu** *(48 câu, 0 ảnh)*
+38. `thpt-trung-van/de_01.json` — **THPT Trung Văn** *(48 câu, 0 ảnh)*
+39. `thpt-van-quan/de_01.json` — **THPT Văn Quán – Vĩnh Phúc** *(48 câu, 0 ảnh)*
+40. `thpt-vo-thi-sau/de_01.json` — **THPT Võ Thị Sáu** *(40 câu, 0 ảnh)*
+41. `truong-ptdtnt-thpt-binh-phuoc/de_01.json` — **Trường PTDTNT THPT Bình Phước** *(48 câu, 0 ảnh)*
 
 ---
 
 # PENDING TASKS (NƠI DỪNG LẠI)
 
 1. **Đồng bộ từ Google Drive lên Web App (GitHub Repo)**:
-   - Toàn bộ **6 chương của Toán Đề ngoài — Tổng hợp (`Chương 1` → `Chương 6`: 47 bài / 1.957 câu / 566 ảnh)**, **Xác suất (`Bài 01` → `Bài 06`)** và **10 trường Tin học Đề ngoài** **ĐÃ ĐƯỢC ĐỒNG BỘ 100% LÊN WEB** (`CACHE_VERSION = 'thkc-quiz-v2.2.0'`).
+   - Toàn bộ **6 chương của Toán Đề ngoài — Tổng hợp (`Chương 1` → `Chương 6`: 47 bài / 1.957 câu / 566 ảnh)**, **Xác suất (`Bài 01` → `Bài 06`)** và **41 trường (49 đề thi / 2.296 câu / 16 ảnh) của Tin học Đề ngoài** **ĐÃ ĐƯỢC ĐỒNG BỘ 100% LÊN WEB** (`CACHE_VERSION = 'thkc-quiz-v2.3.0'`).
    - Lưu ý: Trên Drive tại `Wed ôn tập/toan/de-ngoai/xac-suat` hiện có thêm các thư mục `bai-07` đến `bai-17` (chờ lệnh xác nhận của người dùng nếu muốn nạp tiếp vào chuyên đề Xác suất).
-
-2. **Các đề gốc (Word/PDF) còn lại trên Google Drive chờ bóc tách sang JSON (nếu tiếp tục bóc tách đề)**:
-   - **Môn Tin học — Đề ngoài** (Thư mục file gốc `tin học` trên Drive — ID: `1nsSzoxfAO9pff-iDJA-R_krlpnRbsAfg` hiện có 15 file gốc, đã xong 10 trường ở mục Completed, còn **5 trường chưa có thư mục JSON trong `Wed ôn tập/tinhoc/de-ngoai/`**, bắt đầu từ **Câu 1** của từng đề):
-     1. `CỤM KIẾN AN - DƯƠNG KÍNH - KIẾN THỤY - HẢI PHÒNG.pdf` (File ID: `1hxqbxO9yhg-giBaeDiqIeZ5YPfFVl0kr`) — cần bóc từ **Câu 1**.
-     2. `THPT CHUYÊN TRẦN ĐẠI NGHĨA - HCM - ĐA.docx` (File ID: `1EcfrN0m0TLP7Gs_QrwAJ_-hUML8YCdaj`) — cần bóc từ **Câu 1**.
-     3. `THPT DIỄN CHÂU 5 - NGHỆ AN - ĐA.docx` (File ID: `1_G1JqYGCQnKmzMPM2CXHnyZm0FtTwSjb`) — cần bóc từ **Câu 1**.
-     4. `THPT PHAN ĐÌNH PHÙNG - HN-ĐA.docx` (File ID: `1xdxNI9ULsgNFPoj3-IuEQwI23dm5_ldL`) — cần bóc từ **Câu 1**.
-     5. `THPT Tân Sơn - Phú Thọ - Đáp án.docx` (File ID: `1w_pcXzCy2Ia6dsYSQnTVciv8VPn-KG2r`) — cần bóc từ **Câu 1**.
 
 ---
 
