@@ -109,7 +109,16 @@ export function initQuizController({ confirm, toast } = {}) {
  * @param {Array<import('../services/data.service.js').Question>} params.questions
  * @param {boolean} [params.isRetry=false]
  */
-export async function startQuiz({ subjectId, subjectName, source, questions, isRetry = false }) {
+export async function startQuiz({
+  subjectId,
+  subjectName,
+  source,
+  categoryId = null,
+  chapterId = null,
+  lessonId = null,
+  questions,
+  isRetry = false,
+}) {
   const settings = getState('settings');
   const prepared = prepareQuizQuestions(questions, settings);
 
@@ -127,6 +136,9 @@ export async function startQuiz({ subjectId, subjectName, source, questions, isR
     subjectId,
     subjectName,
     source,
+    categoryId: categoryId || null,
+    chapterId: chapterId || null,
+    lessonId: lessonId || null,
     questions: prepared,
     answers: {},
     checked: {},
@@ -497,6 +509,9 @@ export async function submitQuiz(opts = {}) {
     subjectId: quiz.subjectId,
     subjectName: quiz.subjectName,
     source: quiz.source,
+    categoryId: quiz.categoryId || null,
+    chapterId: quiz.chapterId || null,
+    lessonId: quiz.lessonId || null,
     durationSec,
     isRetry: quiz.isRetry,
     createdAt: Date.now(),
@@ -629,6 +644,9 @@ function retryWrongQuestions() {
     subjectId: last.subjectId,
     subjectName: last.subjectName,
     source: last.source,
+    categoryId: last.categoryId || null,
+    chapterId: last.chapterId || null,
+    lessonId: last.lessonId || null,
     questions: wrongQuestions,
     isRetry: true,
   });
@@ -642,6 +660,9 @@ function retryAllQuestions() {
     subjectId: last.subjectId,
     subjectName: last.subjectName,
     source: last.source,
+    categoryId: last.categoryId || null,
+    chapterId: last.chapterId || null,
+    lessonId: last.lessonId || null,
     questions: last.questions,
     isRetry: false,
   });

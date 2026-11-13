@@ -1642,3 +1642,53 @@
   display: flex;
 }
 
+/* ==========================================================================
+   NHÃN TRẠNG THÁI LÀM BÀI (CHƯA LÀM / ĐÃ LÀM THEO MỨC ĐIỂM)
+   - Chưa làm: xám nhạt
+   - < 5 điểm: chữ đỏ (status-badge--low)
+   - 5 đến < 8 điểm: chữ xanh dương (status-badge--mid)
+   - 8 đến 10 điểm: chữ xanh lá (status-badge--good)
+   ========================================================================== */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: var(--radius-full);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  line-height: 1.4;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.status-badge[hidden] {
+  display: none !important;
+}
+
+.status-badge--none {
+  background: var(--c-surface);
+  color: var(--c-text-muted);
+  border: 1px solid var(--c-border);
+  font-weight: var(--fw-medium);
+}
+
+.status-badge--low {
+  background: rgba(247, 118, 142, 0.16);
+  color: #f7768e;
+  border: 1px solid rgba(247, 118, 142, 0.45);
+}
+
+.status-badge--mid {
+  background: rgba(122, 162, 247, 0.18);
+  color: #7aa2f7;
+  border: 1px solid rgba(122, 162, 247, 0.48);
+}
+
+.status-badge--good {
+  background: rgba(158, 206, 106, 0.18);
+  color: #9ece6a;
+  border: 1px solid rgba(158, 206, 106, 0.48);
+}
+
+

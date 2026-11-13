@@ -42,7 +42,12 @@ import {
 import { login, logout, watchAuth } from './services/auth.service.js';
 import { logLogin } from './services/audit.service.js';
 import { loadUserProfile, touchLastLogin } from './services/profile.service.js';
-import { fetchRecentHistory, scheduleAutoClean } from './services/history.service.js';
+import {
+  fetchRecentHistory,
+  scheduleAutoClean,
+  getAttemptStatus,
+  syncUserProgress,
+} from './services/history.service.js';
 import {
   initOfflineSync,
   flushQueue,
@@ -96,6 +101,8 @@ function bootstrap() {
   onScreen('home', {
     enter: () => {
       refreshHomeHistory();
+      const subjects = getState('subjects');
+      if (subjects && subjects.length) renderSubjectCards(subjects);
       const step = getState('selection').wizardStep || 1;
       goToWizardStep(step);
     },
@@ -187,6 +194,8 @@ async function handleAuthStateChange(fbUser) {
     } catch (err) {
       console.warn('[app] Thử tải lại subjects lỗi:', err);
     }
+  } else {
+    renderSubjectCards(getState('subjects'));
   }
 
   // Luôn bắt đầu ở Bước 1 của Wizard khi mới đăng nhập vào Trang chủ
@@ -196,7 +205,18 @@ async function handleAuthStateChange(fbUser) {
   }
   hideLoader(loader);
 
-  // Chạy ngầm: đẩy hàng đợi offline & dọn lịch sử cũ hơn 365 ngày
+  // Chạy ngầm: đồng bộ trạng thái bài đã làm, đẩy hàng đợi offline & dọn lịch sử > 365 ngày
+  syncUserProgress().then(() => {
+    const subjects = getState('subjects');
+    if (subjects && subjects.length) renderSubjectCards(subjects);
+    if (currentScreen() === 'home') {
+      const step = getState('selection').wizardStep || 1;
+      const subj = getSubjectById(getState('selection').subjectId);
+      if (step === 2 && subj) populateStep2Sources(subj);
+      else if (step === '2b' && subj) populateStep2bCategories(subj);
+      else if (step === 3 && subj) populateStep3Config(subj);
+    }
+  });
   flushQueue().then(({ synced }) => {
     if (synced > 0) refreshHomeHistory();
   });
@@ -437,6 +457,9 @@ function bindHomeWizardEvents() {
         subjectId: subject.id,
         subjectName: displaySubjectName,
         source,
+        categoryId,
+        chapterId,
+        lessonId,
         questions,
         isRetry: false,
       });
@@ -447,6 +470,17 @@ function bindHomeWizardEvents() {
       updateStep3BreakdownAndPreview();
     }
   });
+}
+
+/**
+ * Gán class và nội dung cho 1 nhãn trạng thái làm bài (`.status-badge`).
+ * @param {HTMLElement|null} el
+ * @param {{attempted: boolean, score: number|null, level: 'none'|'low'|'mid'|'good', text: string}} status
+ */
+function applyStatusBadge(el, status) {
+  if (!el || !status) return;
+  el.className = `status-badge status-badge--${status.level}`;
+  el.textContent = status.text;
 }
 
 function syncSelectedPartsFromDOM() {
@@ -481,6 +515,14 @@ function renderSubjectCards(subjects) {
     nameEl.textContent = subj.name;
     if (metaEl) {
       metaEl.textContent = subj.sources.length > 1 ? 'Đề trường · Đề ngoài' : 'Chỉ có Đề trường';
+    }
+
+    // Với các môn chỉ có 1 đề duy nhất (Hóa, Sinh, GDQP -> Đề trường), hiển thị ngay trạng thái Đã làm / Chưa làm trên thẻ môn
+    if (subj.sources.length === 1) {
+      const status = getAttemptStatus({ subjectId: subj.id, source: SOURCES.TRUONG });
+      const statusBadge = document.createElement('span');
+      applyStatusBadge(statusBadge, status);
+      card.appendChild(statusBadge);
     }
 
     card.addEventListener('click', () => {
@@ -587,6 +629,23 @@ async function populateStep2Sources(subject) {
     /** @type {HTMLElement} */ (btn).hidden = !subject.sources.includes(src);
   });
 
+  // Cập nhật nhãn trạng thái Đã làm / Chưa làm cho Đề trường và Đề ngoài
+  const truongStatusEl = document.getElementById('source-status-truong');
+  const ngoaiStatusEl = document.getElementById('source-status-ngoai');
+  if (truongStatusEl) {
+    applyStatusBadge(truongStatusEl, getAttemptStatus({ subjectId: subject.id, source: SOURCES.TRUONG }));
+    truongStatusEl.hidden = false;
+  }
+  if (ngoaiStatusEl) {
+    if (requiresCategoryStep(subject.id, SOURCES.NGOAI)) {
+      // Toán & Tin học Đề ngoài có nhiều bài/trường bên trong -> hiển thị trạng thái chi tiết ở Màn 2b
+      ngoaiStatusEl.hidden = true;
+    } else {
+      applyStatusBadge(ngoaiStatusEl, getAttemptStatus({ subjectId: subject.id, source: SOURCES.NGOAI }));
+      ngoaiStatusEl.hidden = false;
+    }
+  }
+
   const truongInfo = document.getElementById('source-count-truong');
   const ngoaiInfo = document.getElementById('source-count-ngoai');
 
@@ -643,7 +702,7 @@ async function populateStep2bCategories(subject) {
 }
 
 /**
- * Tạo nút Bài nhỏ (`.lesson-btn`).
+ * Tạo nút Bài nhỏ / Đề trường (`.lesson-btn`) kèm nhãn trạng thái Đã làm / Chưa làm.
  */
 function createLessonButton(cat, les, ch = null) {
   const lesBtn = document.createElement('button');
@@ -668,6 +727,18 @@ function createLessonButton(cat, les, ch = null) {
   const metaSpan = document.createElement('span');
   metaSpan.className = 'lesson-btn__meta';
 
+  // Nhãn trạng thái làm bài (Chưa làm / Đã làm · Xđ với màu đỏ <5, xanh dương 5-8, xanh lá 8-10)
+  const currentSubjectId = getState('selection').subjectId || (cat.id === 'de_truong_thpt' ? 'tinhoc' : 'toan');
+  const status = getAttemptStatus({
+    subjectId: currentSubjectId,
+    source: SOURCES.NGOAI,
+    categoryId: cat.id,
+    chapterId: ch?.id || null,
+    lessonId: les.id,
+  });
+  const statusSpan = document.createElement('span');
+  applyStatusBadge(statusSpan, status);
+
   const qCount = Array.isArray(les.questions) ? les.questions.length : 0;
   const badge = document.createElement('span');
   badge.className = 'badge badge--info';
@@ -677,6 +748,7 @@ function createLessonButton(cat, les, ch = null) {
   arrow.className = 'muted';
   arrow.textContent = '›';
 
+  metaSpan.appendChild(statusSpan);
   metaSpan.appendChild(badge);
   metaSpan.appendChild(arrow);
 
@@ -835,10 +907,11 @@ function renderCategoryAccordionList(categories) {
  * @param {{id: string, name: string, icon: string, sources: string[]}} subject
  */
 async function populateStep3Config(subject) {
-  const { source, lessonName } = getState('selection');
+  const { source, categoryId, chapterId, lessonId, lessonName } = getState('selection');
   const subjBadge = document.getElementById('step3-subject-badge');
   const srcBadge = document.getElementById('step3-source-badge');
   const lesBadge = document.getElementById('step3-lesson-badge');
+  const statusBadge = document.getElementById('step3-status-badge');
   const backBtn = document.getElementById('btn-back-step-3');
 
   if (subjBadge) subjBadge.textContent = `${subject.icon} ${subject.name}`;
@@ -851,6 +924,17 @@ async function populateStep3Config(subject) {
     } else {
       lesBadge.hidden = true;
     }
+  }
+
+  if (statusBadge) {
+    const status = getAttemptStatus({
+      subjectId: subject.id,
+      source,
+      categoryId,
+      chapterId,
+      lessonId,
+    });
+    applyStatusBadge(statusBadge, status);
   }
 
   if (backBtn) {

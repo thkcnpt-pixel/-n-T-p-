@@ -89,6 +89,9 @@ function buildRecord(result, uid) {
     subjectId: String(result.subjectId || ''),
     subjectName: String(result.subjectName || ''),
     source: String(result.source || ''),
+    categoryId: result.categoryId ? String(result.categoryId) : null,
+    chapterId: result.chapterId ? String(result.chapterId) : null,
+    lessonId: result.lessonId ? String(result.lessonId) : null,
     score: total ? Math.round((correct / total) * 1000) / 100 : 0,
     correct,
     wrong: Number(result.wrong) || 0,
@@ -101,6 +104,167 @@ function buildRecord(result, uid) {
   };
 }
 
+/* --------------------------------------------------------------------------
+   Theo dõi trạng thái "Đã làm / Chưa làm" & phân loại màu theo điểm
+   - Dưới 5đ (< 5): màu đỏ ('low')
+   - 5đ đến dưới 8đ (5 <= score < 8): màu xanh dương ('mid')
+   - 8đ đến 10đ (score >= 8): màu xanh lá ('good')
+   -------------------------------------------------------------------------- */
+
+const PROGRESS_STORAGE_PREFIX = 'thkc_progress_';
+
+/** @type {Map<string, {score: number, correct: number, total: number, createdAt: number}>} */
+const progressMap = new Map();
+
+/**
+ * Tạo khóa định danh duy nhất cho 1 đề / bài học / đề trường.
+ * @param {{subjectId?: string|null, source?: string|null, categoryId?: string|null, chapterId?: string|null, lessonId?: string|null}} opts
+ * @returns {string}
+ */
+export function buildProgressKey({ subjectId, source, categoryId, chapterId, lessonId } = {}) {
+  const subj = String(subjectId || '').trim();
+  const src = String(source || 'truong').trim();
+  if (lessonId) {
+    return `${subj}:${src}:${categoryId || ''}:${chapterId || ''}:${lessonId}`;
+  }
+  return `${subj}:${src}:::`;
+}
+
+/**
+ * Suy luận khóa tiến độ từ bản ghi lịch sử (hỗ trợ cả bản ghi cũ chưa lưu lessonId).
+ * @param {any} rec
+ * @returns {string|null}
+ */
+function inferProgressKeyFromRecord(rec) {
+  if (!rec || !rec.subjectId || !rec.source) return null;
+  if (rec.lessonId) {
+    return buildProgressKey(rec);
+  }
+  // Thử suy luận từ wrongIds (VD: "toan:ngoai:tonghop:chuong_6:bai_01:cau_01" hoặc "toan:ngoai:xacsuat:bai_01:cau_01")
+  if (Array.isArray(rec.wrongIds) && rec.wrongIds.length > 0) {
+    const parts = String(rec.wrongIds[0]).split(':');
+    if (parts.length >= 6) {
+      return buildProgressKey({
+        subjectId: parts[0],
+        source: parts[1],
+        categoryId: parts[2],
+        chapterId: parts[3],
+        lessonId: parts[4],
+      });
+    }
+    if (parts.length === 5) {
+      return buildProgressKey({
+        subjectId: parts[0],
+        source: parts[1],
+        categoryId: parts[2],
+        chapterId: null,
+        lessonId: parts[3],
+      });
+    }
+  }
+  // Nếu là đề phẳng (không phải Toán/Tin đề ngoài chia bài)
+  if (!(rec.subjectId === 'toan' && rec.source === 'ngoai') && !(rec.subjectId === 'tinhoc' && rec.source === 'ngoai')) {
+    return buildProgressKey({ subjectId: rec.subjectId, source: rec.source });
+  }
+  return null;
+}
+
+function saveProgressToLocal(uid) {
+  if (!uid) return;
+  try {
+    const obj = Object.fromEntries(progressMap.entries());
+    localStorage.setItem(`${PROGRESS_STORAGE_PREFIX}${uid}`, JSON.stringify(obj));
+  } catch (err) {
+    console.warn('[history] Không lưu được cache tiến độ vào localStorage:', err);
+  }
+}
+
+function loadProgressFromLocal(uid) {
+  progressMap.clear();
+  if (!uid) return;
+  try {
+    const raw = localStorage.getItem(`${PROGRESS_STORAGE_PREFIX}${uid}`);
+    if (!raw) return;
+    const obj = JSON.parse(raw);
+    if (obj && typeof obj === 'object') {
+      for (const [k, v] of Object.entries(obj)) {
+        if (v && typeof v.score === 'number') {
+          progressMap.set(k, v);
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[history] Lỗi đọc cache tiến độ từ localStorage:', err);
+  }
+}
+
+function applyRecordToProgress(rec) {
+  const key = inferProgressKeyFromRecord(rec);
+  if (!key) return;
+  const prev = progressMap.get(key);
+  const createdAt = Number(rec.createdAt) || 0;
+  // Lưu kết quả của lần làm bài mới nhất (hoặc nếu chưa có)
+  if (!prev || createdAt >= (prev.createdAt || 0)) {
+    progressMap.set(key, {
+      score: Number(rec.score) || 0,
+      correct: Number(rec.correct) || 0,
+      total: Number(rec.total) || 0,
+      createdAt,
+    });
+  }
+}
+
+/**
+ * Lấy trạng thái Đã làm / Chưa làm và phân loại màu sắc theo điểm số:
+ * - Chưa làm: `{ done: false, level: 'none', text: 'Chưa làm' }`
+ * - Dưới 5đ (< 5): `{ done: true, level: 'low', score, text: 'Đã làm · Xđ' }` (Màu đỏ)
+ * - Từ 5đ đến dưới 8đ (5 <= score < 8): `{ done: true, level: 'mid', score, text: 'Đã làm · Xđ' }` (Màu xanh dương)
+ * - Từ 8đ đến 10đ (score >= 8): `{ done: true, level: 'good', score, text: 'Đã làm · Xđ' }` (Màu xanh lá)
+ * @param {{subjectId?: string|null, source?: string|null, categoryId?: string|null, chapterId?: string|null, lessonId?: string|null}} opts
+ */
+export function getAttemptStatus(opts = {}) {
+  const key = buildProgressKey(opts);
+  const entry = progressMap.get(key);
+  if (!entry) {
+    return {
+      done: false,
+      level: 'none',
+      score: null,
+      text: 'Chưa làm',
+    };
+  }
+  const score = Number(entry.score) || 0;
+  const formattedScore = Number.isInteger(score) ? String(score) : score.toFixed(1).replace(/\.0$/, '');
+  /** @type {'low'|'mid'|'good'} */
+  let level = 'low';
+  if (score >= 8) {
+    level = 'good';
+  } else if (score >= 5) {
+    level = 'mid';
+  }
+  return {
+    done: true,
+    level,
+    score,
+    text: `Đã làm · ${formattedScore}đ`,
+  };
+}
+
+/**
+ * Tải toàn bộ lịch sử làm bài của user để đồng bộ trạng thái Đã làm / Chưa làm.
+ * @param {number} [maxCount=150]
+ */
+export async function syncUserProgress(maxCount = 150) {
+  const uid = auth.currentUser?.uid;
+  if (!uid) {
+    progressMap.clear();
+    return;
+  }
+  loadProgressFromLocal(uid);
+  await fetchRecentHistory(maxCount);
+  saveProgressToLocal(uid);
+}
+
 /**
  * Lưu kết quả bài thi. Không throw khi lỗi mạng — tự chuyển sang hàng đợi offline.
  * @param {Object} result
@@ -111,6 +275,9 @@ export async function saveResult(result) {
   if (!uid) throw new Error('Chưa đăng nhập — không thể lưu kết quả.');
 
   const record = buildRecord(result, uid);
+  applyRecordToProgress(record);
+  saveProgressToLocal(uid);
+
   const queueIt = () => {
     enqueue({ type: 'history', uid, payload: record, dedupeKey: `history:${record.id}` });
     return { status: 'queued', record };
@@ -140,7 +307,9 @@ export async function fetchRecentHistory(count = 5) {
   const merged = new Map();
 
   getQueue(uid, 'history').forEach((item) => {
-    merged.set(item.payload.id, { ...item.payload, pending: true });
+    const rec = { ...item.payload, pending: true };
+    merged.set(item.payload.id, rec);
+    applyRecordToProgress(rec);
   });
 
   if (isOnline()) {
@@ -152,13 +321,16 @@ export async function fetchRecentHistory(count = 5) {
       );
       snap.forEach((d) => {
         const data = d.data();
-        merged.set(d.id, {
+        const rec = {
           ...data,
           id: d.id,
           createdAt: data.createdAt?.toMillis?.() ?? 0,
           pending: false,
-        });
+        };
+        merged.set(d.id, rec);
+        applyRecordToProgress(rec);
       });
+      saveProgressToLocal(uid);
     } catch (err) {
       console.warn('[history] Không tải được lịch sử từ mây:', err);
     }
