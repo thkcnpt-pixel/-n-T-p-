@@ -169,13 +169,28 @@
 40. `thpt-vo-thi-sau/de_01.json` — **THPT Võ Thị Sáu** *(28 câu sau gom, 0 ảnh)*
 41. `truong-ptdtnt-thpt-binh-phuoc/de_01.json` — **Trường PTDTNT THPT Bình Phước** *(30 câu sau gom, 0 ảnh)*
 
+### 3. Môn Vật lí — Đề ngoài (`data/vatly-ngoai.json`)
+Đã nạp **12 đề thi thử Vật lí (`de-so-7-to-4` → `de-so-18-to-10`: 480 câu gốc → 336 câu sau khi gom 192 ý Đúng/Sai thành 48 câu 4 mệnh đề `a, b, c, d` / 99 ảnh minh họa)** từ Drive (`https://drive.google.com/drive/folders/1LfzEjTNGmSnV0ppYYtxhz5wce37FNxBP`) lên web (`data/vatly-ngoai.json` & `assets/images/vat-li/ngoai/`):
+1. `de-so-7-to-4` — **Đề số 7 – Tổ 4** *(40 câu gốc → 28 câu sau gom, 10 ảnh)*
+2. `de-so-8-to-5` — **Đề số 8 – Tổ 5** *(40 câu gốc → 28 câu sau gom, 8 ảnh)*
+3. `de-so-9-to-6` — **Đề số 9 – Tổ 6** *(40 câu gốc → 28 câu sau gom, 9 ảnh)*
+4. `de-so-10-to-6` — **Đề số 10 – Tổ 6** *(40 câu gốc → 28 câu sau gom, 9 ảnh)*
+5. `de-so-11-to-7` — **Đề số 11 – Tổ 7** *(40 câu gốc → 28 câu sau gom, 12 ảnh)*
+6. `de-so-12-to-7` — **Đề số 12 – Tổ 7** *(40 câu gốc → 28 câu sau gom, 6 ảnh; lưu ý `cau_28` chưa có file ảnh trên Drive)*
+7. `de-so-13-to-8` — **Đề số 13 – Tổ 8** *(40 câu gốc → 28 câu sau gom, 6 ảnh)*
+8. `de-so-14-to-8` — **Đề số 14 – Tổ 8** *(40 câu gốc → 28 câu sau gom, 7 ảnh)*
+9. `de-so-15-to-9` — **Đề số 15 – Tổ 9** *(40 câu gốc → 28 câu sau gom, 8 ảnh)*
+10. `de-so-16-to-9` — **Đề số 16 – Tổ 9** *(40 câu gốc → 28 câu sau gom, 6 ảnh)*
+11. `de-so-17-to-10` — **Đề số 17 – Tổ 10** *(40 câu gốc → 28 câu sau gom, 11 ảnh)*
+12. `de-so-18-to-10` — **Đề số 18 – Tổ 10** *(40 câu gốc → 28 câu sau gom, 7 ảnh)*
+
 ---
 
 # PENDING TASKS (NƠI DỪNG LẠI)
 
 1. **Đồng bộ từ Google Drive lên Web App (GitHub Repo)**:
-   - Toàn bộ **6 chương của Toán Đề ngoài — Tổng hợp (`Chương 1` → `Chương 6`: 47 bài / 1.558 câu sau gom / 566 ảnh)**, **Xác suất (`Bài 01` → `Bài 06`: 287 câu)** và **41 trường (49 đề thi / 1.456 câu sau gom / 16 ảnh) của Tin học Đề ngoài** **ĐÃ ĐƯỢC ĐỒNG BỘ 100% LÊN WEB** (`CACHE_VERSION = 'thkc-quiz-v2.4.0'`).
-   - Toàn bộ câu hỏi Đúng/Sai trên hệ thống (413 cụm câu hỏi chính thức + 6 câu mẫu) đã được gom thành câu 4 mệnh đề (`a, b, c, d`) và áp dụng thang điểm `0.1 / 0.25 / 0.5 / 1.0`.
+   - Toàn bộ **6 chương của Toán Đề ngoài — Tổng hợp (`Chương 1` → `Chương 6`: 47 bài / 1.558 câu sau gom / 566 ảnh)**, **Xác suất (`Bài 01` → `Bài 06`: 287 câu)**, **41 trường (49 đề thi / 1.456 câu sau gom / 16 ảnh) của Tin học Đề ngoài** và **12 đề thi thử (336 câu sau gom / 99 ảnh) của Vật lí Đề ngoài** **ĐÃ ĐƯỢC ĐỒNG BỘ 100% LÊN WEB** (`CACHE_VERSION = 'thkc-quiz-v2.5.0'`).
+   - Toàn bộ câu hỏi Đúng/Sai trên hệ thống đã được gom thành câu 4 mệnh đề (`a, b, c, d`) và áp dụng thang điểm `0.1 / 0.25 / 0.5 / 1.0`.
    - Lưu ý: Trên Drive tại `Wed ôn tập/toan/de-ngoai/xac-suat` hiện có thêm các thư mục `bai-07` đến `bai-17` (chờ lệnh xác nhận của người dùng nếu muốn nạp tiếp vào chuyên đề Xác suất).
 
 ---
@@ -195,6 +210,8 @@
     - `toan/de-ngoai/tong-hop/chuong-6`: Folder ID `1i2zU7ctCvMto3DU2bCzgM_IBkXUSdHYj`
   - **Tin học (`tinhoc`)**: Folder ID `1f4rOPslr84ITpvEH9oA9z2Ak0xsZAs6O`
     - `tinhoc/de-ngoai`: Folder ID `1fsIdOAAvOT-kZH0bTZU5OAG9wn_IR7gI`
+  - **Vật lí (`vatly`)**: Folder ID `1xagiQDnd895AHRkb9Wy_uZsHrojhrIHc`
+    - `vatly/de-ngoai`: Folder ID `1LfzEjTNGmSnV0ppYYtxhz5wce37FNxBP`
   - **Thư mục chứa file Word/PDF gốc môn Tin học (`tin học`)**: Folder ID `1nsSzoxfAO9pff-iDJA-R_krlpnRbsAfg`
 
 ### 2. GitHub Repository & Local Workspace
@@ -203,8 +220,10 @@
   - File tracker bàn giao: `/home/antigravity/thkcnpt-pixel/-n-T-p-/AI_HANDOFF_TRACKER.md`
   - Dữ liệu Toán Đề ngoài: `/home/antigravity/thkcnpt-pixel/-n-T-p-/data/toan-ngoai.json`
   - Dữ liệu Tin học Đề ngoài: `/home/antigravity/thkcnpt-pixel/-n-T-p-/data/tinhoc-ngoai.json`
+  - Dữ liệu Vật lí Đề ngoài: `/home/antigravity/thkcnpt-pixel/-n-T-p-/data/vatly-ngoai.json`
   - Ảnh Toán Đề ngoài: `/home/antigravity/thkcnpt-pixel/-n-T-p-/assets/images/toan/ngoai/`
   - Ảnh Tin học Đề ngoài: `/home/antigravity/thkcnpt-pixel/-n-T-p-/assets/images/tinhoc/ngoai/`
+  - Ảnh Vật lí Đề ngoài: `/home/antigravity/thkcnpt-pixel/-n-T-p-/assets/images/vat-li/ngoai/`
   - Logic nạp dữ liệu & danh mục: `/home/antigravity/thkcnpt-pixel/-n-T-p-/js/services/data.service.js`
   - Logic giao diện Wizard & Accordion: `/home/antigravity/thkcnpt-pixel/-n-T-p-/js/app.js`
   - Quản lý Cache PWA: `/home/antigravity/thkcnpt-pixel/-n-T-p-/service-worker.js`

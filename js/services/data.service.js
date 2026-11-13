@@ -206,6 +206,33 @@ export const DEFAULT_TINHOC_NGOAI_CATEGORIES = Object.freeze([
 ]);
 
 /**
+ * Cấu trúc danh mục mặc định cho Vật lí > Đề ngoài (Bộ 12 đề thi thử).
+ */
+export const DEFAULT_VATLY_NGOAI_CATEGORIES = Object.freeze([
+  {
+    id: 'de_vatly_ngoai',
+    name: 'Đề thi thử Vật lí',
+    icon: '⚡',
+    description: 'Bộ 12 đề thi thử Vật lí (Đề số 7 – Đề số 18)',
+    chapters: [],
+    lessons: [
+      { id: 'de-so-7-to-4', name: 'Đề số 7 – Tổ 4', questions: [] },
+      { id: 'de-so-8-to-5', name: 'Đề số 8 – Tổ 5', questions: [] },
+      { id: 'de-so-9-to-6', name: 'Đề số 9 – Tổ 6', questions: [] },
+      { id: 'de-so-10-to-6', name: 'Đề số 10 – Tổ 6', questions: [] },
+      { id: 'de-so-11-to-7', name: 'Đề số 11 – Tổ 7', questions: [] },
+      { id: 'de-so-12-to-7', name: 'Đề số 12 – Tổ 7', questions: [] },
+      { id: 'de-so-13-to-8', name: 'Đề số 13 – Tổ 8', questions: [] },
+      { id: 'de-so-14-to-8', name: 'Đề số 14 – Tổ 8', questions: [] },
+      { id: 'de-so-15-to-9', name: 'Đề số 15 – Tổ 9', questions: [] },
+      { id: 'de-so-16-to-9', name: 'Đề số 16 – Tổ 9', questions: [] },
+      { id: 'de-so-17-to-10', name: 'Đề số 17 – Tổ 10', questions: [] },
+      { id: 'de-so-18-to-10', name: 'Đề số 18 – Tổ 10', questions: [] },
+    ],
+  },
+]);
+
+/**
  * Cache theo file:
  * "toan-truong" -> { kind: 'flat', questions: Question[], categories: [] }
  * "toan-ngoai"  -> { kind: 'nested', questions: Question[], categories: CategoryNode[] }
@@ -320,11 +347,11 @@ export function getSubjectById(id) {
  * @returns {boolean}
  */
 export function requiresCategoryStep(subjectId, source) {
-  return (subjectId === 'toan' || subjectId === 'tinhoc') && source === SOURCES.NGOAI;
+  return (subjectId === 'toan' || subjectId === 'tinhoc' || subjectId === 'vatly') && source === SOURCES.NGOAI;
 }
 
 /* --------------------------------------------------------------------------
-   Truy xuất Danh mục Chuyên đề & Bài nhỏ (dành cho Toán / Tin học > Đề ngoài)
+   Truy xuất Danh mục Chuyên đề & Bài nhỏ (dành cho Toán / Tin học / Vật lí > Đề ngoài)
    -------------------------------------------------------------------------- */
 
 /**
@@ -349,6 +376,9 @@ export async function loadNestedCategories(subjectId, source) {
   }
   if (subjectId === 'tinhoc' && source === SOURCES.NGOAI) {
     return structuredClone(DEFAULT_TINHOC_NGOAI_CATEGORIES);
+  }
+  if (subjectId === 'vatly' && source === SOURCES.NGOAI) {
+    return structuredClone(DEFAULT_VATLY_NGOAI_CATEGORIES);
   }
   return [];
 }

@@ -63,6 +63,7 @@ import {
   loadNestedCategories,
   DEFAULT_TOAN_NGOAI_CATEGORIES,
   DEFAULT_TINHOC_NGOAI_CATEGORIES,
+  DEFAULT_VATLY_NGOAI_CATEGORIES,
 } from './services/data.service.js';
 
 import {
@@ -689,7 +690,9 @@ async function populateStep2bCategories(subject) {
 
   const fallbackCats = subject.id === 'tinhoc'
     ? DEFAULT_TINHOC_NGOAI_CATEGORIES
-    : DEFAULT_TOAN_NGOAI_CATEGORIES;
+    : subject.id === 'vatly'
+      ? DEFAULT_VATLY_NGOAI_CATEGORIES
+      : DEFAULT_TOAN_NGOAI_CATEGORIES;
 
   // 1) Hiển thị ngay lập tức bộ khung mặc định để UI không bao giờ bị trống/ẩn
   renderCategoryAccordionList(fallbackCats);
